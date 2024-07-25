@@ -1,0 +1,7 @@
+{
+    "config1": {
+        "sequences": ["Boys"],
+        "tasks": [],
+        "dataFormat": "yuv"
+    }
+}
