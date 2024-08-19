@@ -3,6 +3,9 @@
 ## Tool chains
 
 ### dependence
+1. opencv
+2. nlohmann json
+
 
 ## Modules
 
