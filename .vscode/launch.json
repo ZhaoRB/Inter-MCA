@@ -10,7 +10,7 @@
             "name": "Debug",
             "program": "${workspaceFolder}/build/MCA-PLUS",
             "args": [
-                "./run/tasks.json",
+                "./config/TSPC/Boys/mca.cfg",
             ],
             "cwd": "${workspaceFolder}"
         }
