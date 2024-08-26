@@ -1,3 +1,7 @@
 BasedOnStyle: LLVM
 SortIncludes: true
 # IncludeBlocks: Preserve
+
+IndentWidth: 4
+AccessModifierOffset: -4
+ColumnLimit: 100
