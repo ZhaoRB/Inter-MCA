@@ -1,6 +1,8 @@
-#include <fstream>
 #include <iostream>
 #include <opencv2/core.hpp>
+#include <string>
+
+#include "parse.h"
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -8,13 +10,12 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    const char *configFilePath = argv[1];
-    std::ifstream configFile(configFilePath);
+    std::string configFilePath = argv[1];
 
-    if (!configFile) {
-        std::cerr << "Error: Cannot open file " << configFilePath << std::endl;
-        return 1;
-    }
+    // Parse the configuration file
+    MCA2::Parser parser;
+
+    parser.parseConfigFile(configFilePath);
 
     return 0;
 }

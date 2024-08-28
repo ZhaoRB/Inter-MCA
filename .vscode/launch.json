@@ -8,9 +8,9 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/build/MCA-PLUS",
+            "program": "${workspaceFolder}/build/MCA-Preprocess",
             "args": [
-                "./config/TSPC/Boys/mca.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/TSPC/Boys/mca.cfg",
             ],
             "cwd": "${workspaceFolder}"
         }
