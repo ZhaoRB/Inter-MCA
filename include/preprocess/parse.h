@@ -5,6 +5,7 @@ Read calibration files and calculate center points coordinates
 
 #include <opencv2/core/types.hpp>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace MCA2 {
@@ -13,12 +14,13 @@ struct TaskInfo {
     std::string inputPath;
     std::string outputPath;
     int startFrame, endFrame;
+    int height, width;
 
-    TaskInfo();
-
-    TaskInfo(std::string &calibFile, std::string &input, std::string &output, int start, int end)
+    TaskInfo() {};
+    TaskInfo(std::string &calibFile, std::string &input, std::string &output, int start, int end,
+             int h, int w)
         : calibrationFilePath(calibFile), inputPath(input), outputPath(output), startFrame(start),
-          endFrame(end) {}
+          endFrame(end), height(h), width(w) {}
 };
 
 struct SequenceInfo {
@@ -29,8 +31,7 @@ struct SequenceInfo {
     cv::Point2f cornerPoints[4];
     std::vector<cv::Point2f> centers;
 
-    SequenceInfo();
-
+    SequenceInfo() {};
     SequenceInfo(int w, int h, float d, float rAngle, int r, int c, const cv::Point2f *corners,
                  const std::vector<cv::Point2f> &cts)
         : width(w), height(h), diameter(d), rotationAngle(rAngle), rows(r), cols(c), centers(cts) {
@@ -39,12 +40,16 @@ struct SequenceInfo {
 };
 
 class Parser {
+private:
+    int parseConfigFile(std::string &cfgFilePath,
+                        std::unordered_map<std::string, std::string>& config);
+    int parseCalibXMLFile(std::string &calibXMLFilePath);
+
 public:
     TaskInfo taskInfo;
     SequenceInfo sequenceInfo;
 
-    int parseConfigFile(std::string &cfgFilePath);
-    int parseCalibXMLFile(std::string &calibXMLFilePath);
+    Parser(std::string &cfgFilePath);
 };
 
 } // namespace MCA2

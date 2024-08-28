@@ -13,9 +13,7 @@ int main(int argc, char **argv) {
     std::string configFilePath = argv[1];
 
     // Parse the configuration file
-    MCA2::Parser parser;
-
-    parser.parseConfigFile(configFilePath);
+    MCA2::Parser parser(configFilePath);
 
     return 0;
 }
