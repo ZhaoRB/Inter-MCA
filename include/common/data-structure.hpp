@@ -16,7 +16,7 @@ struct TaskInfo {
     int startFrame, endFrame;
     int height, width;
 
-    std::vector<std::string> inputNames;
+    // std::vector<std::string> inputNames;
 
     TaskInfo() {};
     TaskInfo(std::string &calibFile, std::string &input, std::string &output, int start, int end,

@@ -114,4 +114,6 @@ void Parser::calAllCenterPoints(SequenceInfo &seqInfo) {
     }
 }
 
+void Parser::parsePath() {};
+
 } // namespace MCA2
