@@ -4,4 +4,4 @@ SortIncludes: true
 
 IndentWidth: 4
 AccessModifierOffset: -4
-ColumnLimit: 90
+ColumnLimit: 100

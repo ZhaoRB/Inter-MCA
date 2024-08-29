@@ -35,12 +35,17 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(pugixml)
 
 FetchContent_GetProperties(pugixml)
+
 if(NOT pugixml_POPULATED)
-  FetchContent_Populate(pugixml)
+    FetchContent_Populate(pugixml)
 endif()
 
 target_include_directories(MCA-Preprocess PRIVATE ${pugixml_SOURCE_DIR}/src)
-target_link_directories(MCA-Preprocess PRIVATE pugixml)
+
+# target_link_directories(MCA-Preprocess PRIVATE ${pugixml})
+# target_link_directories(MCA-Preprocess PRIVATE pugixml)
+target_link_libraries(MCA-Preprocess PRIVATE
+    "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}")
 
 # nlohamn_json
 # find_package(nlohmann_json 3.2.0 REQUIRED)

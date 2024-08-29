@@ -17,10 +17,10 @@ struct TaskInfo {
     int height, width;
 
     TaskInfo() {};
-    TaskInfo(std::string &calibFile, std::string &input, std::string &output, int start,
-             int end, int h, int w)
-        : calibrationFilePath(calibFile), inputPath(input), outputPath(output),
-          startFrame(start), endFrame(end), height(h), width(w) {}
+    TaskInfo(std::string &calibFile, std::string &input, std::string &output, int start, int end,
+             int h, int w)
+        : calibrationFilePath(calibFile), inputPath(input), outputPath(output), startFrame(start),
+          endFrame(end), height(h), width(w) {}
 };
 
 struct SequenceInfo {

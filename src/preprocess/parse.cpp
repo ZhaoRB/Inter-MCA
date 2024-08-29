@@ -37,10 +37,9 @@ int Parser::parseConfigFile(std::string &configFilePath) {
         }
     }
 
-    taskInfo = TaskInfo(config["Calibration_xml"], config["RawImage_Path"],
-                        config["Output_Path"], std::stoi(config["start_frame"]),
-                        std::stoi(config["end_frame"]), std::stoi(config["height"]),
-                        std::stoi(config["width"]));
+    taskInfo = TaskInfo(config["Calibration_xml"], config["RawImage_Path"], config["Output_Path"],
+                        std::stoi(config["start_frame"]), std::stoi(config["end_frame"]),
+                        std::stoi(config["height"]), std::stoi(config["width"]));
     configFile.close();
 
     return 0;
@@ -67,21 +66,17 @@ int Parser::parseCalibXMLFile(std::string &calibXMLFilePath) {
     sequenceInfo.rowNum = centerNode.child("rows").text().as_int();
     sequenceInfo.colNum = centerNode.child("cols").text().as_int();
 
-    sequenceInfo.ltop =
-        cv::Point2d(centerNode.child("ltop").child("x").text().as_double(),
-                    centerNode.child("ltop").child("y").text().as_double());
-    sequenceInfo.rtop =
-        cv::Point2d(centerNode.child("rtop").child("x").text().as_double(),
-                    centerNode.child("rtop").child("y").text().as_double());
-    sequenceInfo.lbot =
-        cv::Point2d(centerNode.child("lbot").child("x").text().as_double(),
-                    centerNode.child("lbot").child("y").text().as_double());
+    sequenceInfo.ltop = cv::Point2d(centerNode.child("ltop").child("x").text().as_double(),
+                                    centerNode.child("ltop").child("y").text().as_double());
+    sequenceInfo.rtop = cv::Point2d(centerNode.child("rtop").child("x").text().as_double(),
+                                    centerNode.child("rtop").child("y").text().as_double());
+    sequenceInfo.lbot = cv::Point2d(centerNode.child("lbot").child("x").text().as_double(),
+                                    centerNode.child("lbot").child("y").text().as_double());
 
     if (!centerNode.child("rbot").empty()) {
         sequenceInfo.isThreePoints = false;
-        sequenceInfo.rbot =
-            cv::Point2d(centerNode.child("rbot").child("x").text().as_double(),
-                        centerNode.child("rbot").child("y").text().as_double());
+        sequenceInfo.rbot = cv::Point2d(centerNode.child("rbot").child("x").text().as_double(),
+                                        centerNode.child("rbot").child("y").text().as_double());
     }
 
     calAllCenterPoints();
@@ -90,18 +85,39 @@ int Parser::parseCalibXMLFile(std::string &calibXMLFilePath) {
 }
 
 void Parser::calAllCenterPoints() {
+    double xBias = sequenceInfo.diameter / 2 * sqrt(3);
+    double yBias = sequenceInfo.diameter / 2;
+    cv::Point2d colGap, rowGap;
+    cv::Point2d ltopEven(sequenceInfo.ltop.x + xBias, sequenceInfo.ltop.y + yBias);
+
     if (sequenceInfo.isThreePoints) {
-        double xBias = sequenceInfo.diameter / 2 * sqrt(3);
-        double yBias = sequenceInfo.diameter / 2;
+        colGap = (sequenceInfo.rtop - ltopEven) / (sequenceInfo.colNum / 2 - 1);
+        rowGap = (sequenceInfo.lbot - sequenceInfo.ltop) / (sequenceInfo.rowNum - 1);
 
-        cv::Point2d ltopEven(sequenceInfo.ltop.x + xBias, sequenceInfo.ltop.y + yBias);
-        cv::Point2d colGap =
-            (sequenceInfo.rtop - ltopEven) / (sequenceInfo.colNum / 2 - 1);
-        cv::Point2d rowGap =
-            (sequenceInfo.lbot - sequenceInfo.ltop) / (sequenceInfo.rowNum - 1);
+    } else {
+        // todo
+    }
 
-        std::cout << "colGap: " << colGap.x << ", " << colGap.y << "\n"
-                  << " rowGap: " << rowGap.x << ", " << rowGap.y << std::endl;
+    sequenceInfo.centers.resize(sequenceInfo.colNum * sequenceInfo.rowNum);
+    sequenceInfo.centers[0] = sequenceInfo.ltop;
+    sequenceInfo.centers[1] = ltopEven;
+
+    std::cout << "colGap: " << colGap.x << ", " << colGap.y << "\n"
+              << "rowGap: " << rowGap.x << ", " << rowGap.y << std::endl;
+
+    std::cout << sequenceInfo.centers.size() << std::endl;
+    std::cout << "1: " << sequenceInfo.centers[0].x << ", " << sequenceInfo.centers[0].y << "\n"
+              << "2: " << sequenceInfo.centers[1].x << ", " << sequenceInfo.centers[1].y
+              << std::endl;
+
+    for (int i = 2; i < sequenceInfo.colNum; i++) {
+        sequenceInfo.centers[i] = sequenceInfo.centers[i - 2] + colGap;
+    }
+    for (int i = 1; i < sequenceInfo.rowNum; i++) {
+        for (int j = 0; j < sequenceInfo.colNum; j++) {
+            sequenceInfo.centers[i * sequenceInfo.colNum + j] =
+                sequenceInfo.centers[(i - 1) * sequenceInfo.colNum + j] + rowGap;
+        }
     }
 }
 

@@ -10,7 +10,7 @@
             "name": "Debug",
             "program": "${workspaceFolder}/build/MCA-Preprocess",
             "args": [
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/TSPC/Boys/mca.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/mca.cfg",
             ],
             "cwd": "${workspaceFolder}"
         }
