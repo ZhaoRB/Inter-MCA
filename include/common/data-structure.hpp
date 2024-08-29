@@ -1,5 +1,5 @@
 /*
-Read calibration files and calculate center points coordinates
+Define data structures
  */
 #pragma once
 
@@ -15,6 +15,8 @@ struct TaskInfo {
     std::string outputPath;
     int startFrame, endFrame;
     int height, width;
+
+    std::vector<std::string> inputNames;
 
     TaskInfo() {};
     TaskInfo(std::string &calibFile, std::string &input, std::string &output, int start, int end,
@@ -35,18 +37,4 @@ struct SequenceInfo {
         : ltop(cv::Point2d(0, 0)), rtop(cv::Point2d(0, 0)), lbot(cv::Point2d(0, 0)),
           rbot(cv::Point2d(0, 0)), isThreePoints(true) {};
 };
-
-class Parser {
-private:
-    int parseConfigFile(std::string &cfgFilePath);
-    int parseCalibXMLFile(std::string &calibXMLFilePath);
-    void calAllCenterPoints();
-
-public:
-    TaskInfo taskInfo;
-    SequenceInfo sequenceInfo;
-
-    Parser(std::string &cfgFilePath);
-};
-
 } // namespace MCA2

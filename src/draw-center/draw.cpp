@@ -1,4 +1,3 @@
-#include "parse.hpp"
 #include <iostream>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
@@ -6,8 +5,9 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
-namespace MCA2 {
-int drawCenters(SequenceInfo seq, std::string &imagePath, std::string &outputPath) {
+#include "data-structure.hpp"
+
+int drawCenters(MCA2::SequenceInfo &seq, std::string &imagePath, std::string &outputPath) {
     cv::Mat image = cv::imread(imagePath, cv::IMREAD_COLOR);
 
     if (image.empty()) {
@@ -27,4 +27,15 @@ int drawCenters(SequenceInfo seq, std::string &imagePath, std::string &outputPat
 
     return 0;
 }
-} // namespace MCA2
+
+int main() {
+    // draw centers
+    // std::string drawInputPath =
+    //     "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/raw/miniGarden.bmp";
+    // std::string drawOutputPath =
+    // "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/center/"
+    //                              "all_center_miniGarden_cpp.png";
+    // MCA2::drawCenters(parser.sequenceInfo, drawInputPath, drawOutputPath);
+    std::cout << "drawing" << std::endl;
+    return 0;
+}
