@@ -1,9 +1,11 @@
 #include <fstream>
 #include <iostream>
+#include <opencv2/core/types.hpp>
+#include <ostream>
+#include <pugixml.hpp>
 #include <sstream>
 #include <string>
 #include <unordered_map>
-#include <pugixml.hpp>
 
 #include "parse.h"
 
@@ -11,23 +13,17 @@ namespace MCA2 {
 
 // constructor
 Parser::Parser(std::string &cfgFilePath) {
-    std::unordered_map<std::string, std::string> config;
-    parseConfigFile(cfgFilePath, config);
-
-    taskInfo = TaskInfo(config["Calibration_xml"], config["RawImage_Path"], config["Output_Path"],
-                        std::stoi(config["start_frame"]), std::stoi(config["end_frame"]),
-                        std::stoi(config["height"]), std::stoi(config["width"]));
-
-    
+    parseConfigFile(cfgFilePath);
+    parseCalibXMLFile(taskInfo.calibrationFilePath);
 }
 
 // private functions
-int Parser::parseConfigFile(std::string &configFilePath,
-                            std::unordered_map<std::string, std::string> &config) {
+int Parser::parseConfigFile(std::string &configFilePath) {
     std::ifstream configFile(configFilePath);
+    std::unordered_map<std::string, std::string> config;
 
     if (!configFile.is_open()) {
-        std::cerr << "Error opening file" << std::endl;
+        std::cerr << "Fail to load config file" << std::endl;
         return 1;
     }
 
@@ -40,18 +36,73 @@ int Parser::parseConfigFile(std::string &configFilePath,
             config[key] = value;
         }
     }
-    configFile.close();
 
-    // for (const auto &kv : config) {
-    //     std::cout << kv.first << ": " << kv.second << std::endl;
-    // }
+    taskInfo = TaskInfo(config["Calibration_xml"], config["RawImage_Path"],
+                        config["Output_Path"], std::stoi(config["start_frame"]),
+                        std::stoi(config["end_frame"]), std::stoi(config["height"]),
+                        std::stoi(config["width"]));
+    configFile.close();
 
     return 0;
 }
 
 int Parser::parseCalibXMLFile(std::string &calibXMLFilePath) {
-    // implement
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_file(calibXMLFilePath.c_str());
+
+    if (!result) {
+        std::cerr << "Fail to load XML file: " << result.description() << std::endl;
+        return 1;
+    }
+
+    const pugi::xml_node root = doc.child("TSPCCalibData");
+    if (root.empty()) {
+        std::cerr << "Missing xml node `TSPCCalibData` when initializing" << std::endl;
+    }
+
+    sequenceInfo.diameter = root.child("diameter").text().as_double();
+    sequenceInfo.rotationAngle = root.child("rotation").text().as_double();
+
+    const pugi::xml_node centerNode = root.child("centers");
+    sequenceInfo.rowNum = centerNode.child("rows").text().as_int();
+    sequenceInfo.colNum = centerNode.child("cols").text().as_int();
+
+    sequenceInfo.ltop =
+        cv::Point2d(centerNode.child("ltop").child("x").text().as_double(),
+                    centerNode.child("ltop").child("y").text().as_double());
+    sequenceInfo.rtop =
+        cv::Point2d(centerNode.child("rtop").child("x").text().as_double(),
+                    centerNode.child("rtop").child("y").text().as_double());
+    sequenceInfo.lbot =
+        cv::Point2d(centerNode.child("lbot").child("x").text().as_double(),
+                    centerNode.child("lbot").child("y").text().as_double());
+
+    if (!centerNode.child("rbot").empty()) {
+        sequenceInfo.isThreePoints = false;
+        sequenceInfo.rbot =
+            cv::Point2d(centerNode.child("rbot").child("x").text().as_double(),
+                        centerNode.child("rbot").child("y").text().as_double());
+    }
+
+    calAllCenterPoints();
+
     return 0;
+}
+
+void Parser::calAllCenterPoints() {
+    if (sequenceInfo.isThreePoints) {
+        double xBias = sequenceInfo.diameter / 2 * sqrt(3);
+        double yBias = sequenceInfo.diameter / 2;
+
+        cv::Point2d ltopEven(sequenceInfo.ltop.x + xBias, sequenceInfo.ltop.y + yBias);
+        cv::Point2d colGap =
+            (sequenceInfo.rtop - ltopEven) / (sequenceInfo.colNum / 2 - 1);
+        cv::Point2d rowGap =
+            (sequenceInfo.lbot - sequenceInfo.ltop) / (sequenceInfo.rowNum - 1);
+
+        std::cout << "colGap: " << colGap.x << ", " << colGap.y << "\n"
+                  << " rowGap: " << rowGap.x << ", " << rowGap.y << std::endl;
+    }
 }
 
 } // namespace MCA2

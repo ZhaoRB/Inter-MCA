@@ -15,5 +15,9 @@ int main(int argc, char **argv) {
     // Parse the configuration file
     MCA2::Parser parser(configFilePath);
 
+    // cropper
+
+    // predictor
+
     return 0;
 }
