@@ -6,12 +6,13 @@ add_executable(
     MCA-Preprocess
     src/preprocess/main.cpp
     src/preprocess/parse.cpp
+    src/utils/draw.cpp
 )
 
 target_compile_features(MCA-Preprocess PRIVATE cxx_std_11)
 
 target_include_directories(MCA-Preprocess
-    PRIVATE include/preprocess
+    PRIVATE include/preprocess include
 )
 
 # dependencies
@@ -41,9 +42,6 @@ if(NOT pugixml_POPULATED)
 endif()
 
 target_include_directories(MCA-Preprocess PRIVATE ${pugixml_SOURCE_DIR}/src)
-
-# target_link_directories(MCA-Preprocess PRIVATE ${pugixml})
-# target_link_directories(MCA-Preprocess PRIVATE pugixml)
 target_link_libraries(MCA-Preprocess PRIVATE
     "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}")
 

@@ -2,7 +2,8 @@
 #include <opencv2/core.hpp>
 #include <string>
 
-#include "parse.h"
+#include "parse.hpp"
+#include "utils.hpp"
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -14,6 +15,12 @@ int main(int argc, char **argv) {
 
     // Parse the configuration file
     MCA2::Parser parser(configFilePath);
+
+    std::string drawInputPath =
+        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/raw/miniGarden.bmp";
+    std::string drawOutputPath = "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/center/"
+                                 "all_center_miniGarden_cpp.png";
+    MCA2::drawCenters(parser.sequenceInfo, drawInputPath, drawOutputPath);
 
     // cropper
 
