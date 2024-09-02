@@ -31,6 +31,11 @@ int Parser::parseConfigFile(std::string &configFilePath, TaskInfo &taskInfo) {
         }
     }
 
+    if (!hasFormatSpecifier(config["RawImage_Path"])) {
+        // std::cout << "Warning: RawImage_Path don't have a format specifier" << std::endl;
+        config["end_frame"] = config["start_frame"];
+    }
+
     taskInfo = TaskInfo(config["Calibration_xml"], config["RawImage_Path"], config["Output_Path"],
                         std::stoi(config["start_frame"]), std::stoi(config["end_frame"]),
                         std::stoi(config["height"]), std::stoi(config["width"]));
@@ -114,6 +119,19 @@ void Parser::calAllCenterPoints(SequenceInfo &seqInfo) {
     }
 }
 
-void Parser::parsePath() {};
+void Parser::parsePath() {}; // todo
+
+bool Parser::hasFormatSpecifier(const std::string &str) {
+    static const std::string formatSpecifiers = "cdfsfeEgGxXo";
+
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (str[i] == '%') {
+            if (i + 1 < str.length() && formatSpecifiers.find(str[i + 1]) != std::string::npos) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 } // namespace MCA2

@@ -3,6 +3,7 @@ Define data structures
  */
 #pragma once
 
+#include <array>
 #include <opencv2/core/types.hpp>
 #include <string>
 #include <vector>
@@ -37,4 +38,6 @@ struct SequenceInfo {
         : ltop(cv::Point2d(0, 0)), rtop(cv::Point2d(0, 0)), lbot(cv::Point2d(0, 0)),
           rbot(cv::Point2d(0, 0)), isThreePoints(true) {};
 };
+
+using predictInfo = std::vector<std::array<cv::Point2i, 4>>;
 } // namespace MCA2
