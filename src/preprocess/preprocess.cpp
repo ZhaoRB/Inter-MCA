@@ -19,7 +19,7 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
 
         double radius_d = seqInfo.diameter / 2, halfEdge_d = radius_d / std::sqrt(2);
         int radius = std::floor(radius_d), halfEdge = std::ceil(halfEdge_d);
-        int edge = halfEdge * 2 + 1;
+        int edge = halfEdge * 2;
 
         cv::Mat croppedImage =
             cv::Mat::zeros(cv::Size(seqInfo.colNum * edge, seqInfo.rowNum * edge), CV_8UC3);
@@ -34,8 +34,12 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
             cv::Rect roiRect(leftTop, rightBottom);
             cv::Mat croppedMicroImage = image(roiRect);
 
-            std::cout << "Cropped micro image size: " << roiRect.size() << std::endl;
-            cv::imshow("name", croppedMicroImage);
+            std::cout << "Cropped micro image size: " << croppedMicroImage.size() << std::endl;
+            std::cout << "tought micro image size: " << edge << std::endl;
+
+            cv::imwrite(
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/temp/test-crop.png",
+                croppedMicroImage);
         }
     }
 };

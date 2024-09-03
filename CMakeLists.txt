@@ -32,7 +32,8 @@ target_link_libraries(
 # draw centers
 add_executable(
     Draw-Centers
-    src/draw-center/draw.cpp
+    src/draw-center/main.cpp
+    src/common/parse.cpp
 )
 
 target_include_directories(

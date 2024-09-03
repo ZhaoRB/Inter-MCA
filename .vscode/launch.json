@@ -21,6 +21,8 @@
             "program": "${workspaceFolder}/build/Draw-Centers",
             "args": [
                 "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/raw/miniGarden.bmp",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/center/miniGargen-center-cpp.png"
             ],
             "cwd": "${workspaceFolder}"
         },
