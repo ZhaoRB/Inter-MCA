@@ -7,6 +7,7 @@ include(cmake/dependencies.cmake)
 add_executable(
     MCA-Preprocess
     src/preprocess/main.cpp
+    src/preprocess/preprocess.cpp
     src/common/parse.cpp
 )
 

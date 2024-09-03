@@ -39,5 +39,5 @@ struct SequenceInfo {
           rbot(cv::Point2d(0, 0)), isThreePoints(true) {};
 };
 
-using predictInfo = std::vector<std::array<cv::Point2i, 4>>;
+using PredictInfo = std::vector<std::array<cv::Point2i, 4>>;
 } // namespace MCA2

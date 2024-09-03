@@ -3,7 +3,7 @@
 #include <string>
 
 #include "parse.hpp"
-// #include "utils.hpp"
+#include "preprocess.hpp"
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -19,11 +19,9 @@ int main(int argc, char **argv) {
     MCA2::Parser parser;
     parser.parseConfigFile(configFilePath, taskInfo);
     parser.parseCalibXMLFile(taskInfo.calibrationFilePath, seqInfo);
-    
 
-    // cropper
-
-    // predictor
+    // preprocess
+    MCA2::preprocess(seqInfo, taskInfo);
 
     return 0;
 }
