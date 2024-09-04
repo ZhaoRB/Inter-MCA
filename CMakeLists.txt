@@ -9,6 +9,7 @@ add_executable(
     src/preprocess/main.cpp
     src/preprocess/preprocess.cpp
     src/common/parse.cpp
+    src/common/utils.cpp
 )
 
 target_compile_features(MCA-Preprocess PRIVATE cxx_std_11)
