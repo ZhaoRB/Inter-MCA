@@ -40,13 +40,36 @@ add_executable(
 target_include_directories(
     Draw-Centers
     PRIVATE
-    include/draw-center include/common
+    include/common
     PRIVATE ${OpenCV_INCLUDE_DIRS}
     PRIVATE ${pugixml_SOURCE_DIR}/src
 )
 
 target_link_libraries(
     Draw-Centers
+    PRIVATE ${OpenCV_LIBS}
+    PRIVATE
+    "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
+)
+
+
+# draw centers
+add_executable(
+    MCA-Postprocess
+    src/postprocess/main.cpp
+    src/common/parse.cpp
+)
+
+target_include_directories(
+    MCA-Postprocess
+    PRIVATE
+    include/common include/postprocess
+    PRIVATE ${OpenCV_INCLUDE_DIRS}
+    PRIVATE ${pugixml_SOURCE_DIR}/src
+)
+
+target_link_libraries(
+    MCA-Postprocess
     PRIVATE ${OpenCV_LIBS}
     PRIVATE
     "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"

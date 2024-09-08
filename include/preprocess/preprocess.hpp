@@ -14,7 +14,7 @@ void cropAndRealign(cv::Mat &rawImage, cv::Mat &croppedImage, cv::Point2i &cente
                     int colNum, int sideLength);
 
 // four corners = micro image - cropped patch
-std::array<cv::Mat, 4> getFourCorners(const cv::Size &imageSize, cv::Point2i &center, int radius);
+std::array<cv::Mat, 4> getFourCornerMasks(const cv::Size &imageSize, cv::Point2i &center, int radius);
 
 cv::Point2i calOffsetVector();
 

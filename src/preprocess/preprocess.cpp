@@ -45,16 +45,16 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
 
             cropAndRealign(image, croppedImage, center, idx, seqInfo.colNum, sideLength);
 
-            auto fourCornerMasks = getFourCorners(image.size(), center, radius);
+            auto fourCornerMasks = getFourCornerMasks(image.size(), center, radius);
             // cv::Rect patch(center.x - halfSideLength, center.y - halfSideLength, sideLength, sideLength);
             // cv::rectangle(fourCornerMasks[0], patch, cv::Scalar(255), -1);
 
-            // cv::Mat test;
-            // cv::copyTo(image, test, fourCornerMasks[0]);
+            cv::Mat test;
+            cv::copyTo(image, test, fourCornerMasks[0]);
             
-            // cv::imwrite(
-            //     "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/temp/test-getCorner.png",
-            //     test);
+            cv::imwrite(
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/temp/test-getCorner.png",
+                test);
         }
 
         cv::imwrite(taskInfo.outputPath, croppedImage);
@@ -90,7 +90,7 @@ void predictFourCorners(cv::Mat &rawImage, PredictInfo &predictInfo, cv::Point2i
                 fourCorners);
 }
 
-std::array<cv::Mat, 4> getFourCorners(const cv::Size &imageSize, cv::Point2i &center, int radius) {
+std::array<cv::Mat, 4> getFourCornerMasks(const cv::Size &imageSize, cv::Point2i &center, int radius) {
     int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
     int sideLength = 2 * halfSideLength + 1, diameter = radius * 2 + 1;
 
