@@ -14,11 +14,20 @@ void cropAndRealign(cv::Mat &rawImage, cv::Mat &croppedImage, cv::Point2i &cente
                     int colNum, int sideLength);
 
 // four corners = micro image - cropped patch
-std::array<cv::Mat, 4> getFourCornerMasks(const cv::Size &imageSize, cv::Point2i &center, int radius);
+std::array<cv::Mat, 4> getFourCornerMasks(const cv::Size &imageSize, cv::Point2i &center,
+                                          int radius);
 
-cv::Point2i calOffsetVector();
+enum Direction { TOP, RTOP, RBOT, BOT, LBOT, LTOP };
+const int NEIGHBOR_NUM = 6;
+
+cv::Point2i calOffsetVector(const cv::Point2i &ltop, int w, int h, Direction direction);
+
+std::array<cv::Point2i, NEIGHBOR_NUM>
+calculateOffsetVectors(const cv::Mat &image, const std::vector<cv::Point2d> &centers, int idx,
+                       int colNum, int rowNum, int diameter);
 
 // temp function
+// 分析怎么切 patch，corners（cv::circle cv::rectangle）
 void analysis(const cv::Mat &image, const std::vector<cv::Point2d> &centers, int diameter);
 void analysis2();
 } // namespace MCA2

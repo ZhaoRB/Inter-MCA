@@ -2,6 +2,7 @@
 #include "data-structure.hpp"
 #include "utils.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <iostream>
@@ -24,6 +25,7 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
     int radius = static_cast<int>(seqInfo.diameter) / 2;
     int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
     int sideLength = 2 * halfSideLength + 1;
+    bool hasCalculateOffsetVector = false;
 
     for (int i = taskInfo.startFrame; i <= taskInfo.endFrame; i++) {
         // read image
@@ -33,34 +35,22 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
             continue;
         }
 
+        if (!hasCalculateOffsetVector) {
+        }
+
         cv::Mat croppedImage = cv::Mat::zeros(
             cv::Size(seqInfo.colNum * sideLength, seqInfo.rowNum * sideLength), CV_8UC3);
 
-        // temp: analysis
-        // analysis(image, seqInfo.centers, static_cast<int>(seqInfo.diameter));
-        // analysis2();
-
         for (int idx = 0; idx < seqInfo.centers.size(); idx++) {
             cv::Point2i center(cvRound(seqInfo.centers[idx].x), cvRound(seqInfo.centers[idx].y));
-
             cropAndRealign(image, croppedImage, center, idx, seqInfo.colNum, sideLength);
-
-            auto fourCornerMasks = getFourCornerMasks(image.size(), center, radius);
-            // cv::Rect patch(center.x - halfSideLength, center.y - halfSideLength, sideLength, sideLength);
-            // cv::rectangle(fourCornerMasks[0], patch, cv::Scalar(255), -1);
-
-            cv::Mat test;
-            cv::copyTo(image, test, fourCornerMasks[0]);
-            
-            cv::imwrite(
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/temp/test-getCorner.png",
-                test);
         }
 
         cv::imwrite(taskInfo.outputPath, croppedImage);
     }
 };
 
+// MCA
 void cropAndRealign(cv::Mat &rawImage, cv::Mat &croppedImage, cv::Point2i &center, int idx,
                     int colNum, int sideLength) {
     int halfSideLength = sideLength / 2;
@@ -73,24 +63,9 @@ void cropAndRealign(cv::Mat &rawImage, cv::Mat &croppedImage, cv::Point2i &cente
     croppedMicroImage.copyTo(croppedImage(targetROI));
 }
 
-void predictFourCorners(cv::Mat &rawImage, PredictInfo &predictInfo, cv::Point2i &center,
-                        int radius, int sideLength) {
-    int halfSideLength = sideLength / 2;
-
-    cv::Mat mask = cv::Mat::zeros(rawImage.size(), CV_8UC1);
-    cv::circle(mask, center, radius, cv::Scalar(255), -1);
-    cv::Rect rectPatch(center.x - halfSideLength, center.y - halfSideLength, sideLength,
-                       sideLength);
-    cv::rectangle(mask, rectPatch, cv::Scalar(0), -1);
-
-    cv::Mat fourCorners;
-    cv::copyTo(rawImage, fourCorners, mask);
-
-    cv::imwrite("/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/temp/corners-one-MI.png",
-                fourCorners);
-}
-
-std::array<cv::Mat, 4> getFourCornerMasks(const cv::Size &imageSize, cv::Point2i &center, int radius) {
+// corner predict
+std::array<cv::Mat, 4> getFourCornerMasks(const cv::Size &imageSize, cv::Point2i &center,
+                                          int radius) {
     int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
     int sideLength = 2 * halfSideLength + 1, diameter = radius * 2 + 1;
 
@@ -113,6 +88,53 @@ std::array<cv::Mat, 4> getFourCornerMasks(const cv::Size &imageSize, cv::Point2i
     return fourCornersMasks;
 }
 
+std::array<cv::Point2i, NEIGHBOR_NUM>
+calculateOffsetVectors(const cv::Mat &image, const std::vector<cv::Point2d> &centers, int idx,
+                       int colNum, int rowNu, int diameter) {
+    std::array<cv::Point2i, NEIGHBOR_NUM> offsetVectors;
+    std::array<double, NEIGHBOR_NUM> ssimScores;
+    std::fill_n(ssimScores, NEIGHBOR_NUM, 0.0);
+
+    cv::Point2i curCenter(std::round(centers[idx].x), std::round(centers[idx].y));
+    int radius = diameter / 2;
+    int halfSideLength = static_cast<int>(radius / sqrt(2));
+    int sideLength = halfSideLength * 2 + 1;
+
+    std::array<cv::Rect, NEIGHBOR_NUM> roiRects = {
+        cv::Rect(curCenter.x - halfSideLength, curCenter.y + 1, sideLength, halfSideLength),
+        cv::Rect(curCenter.x - halfSideLength, curCenter.y + 1, halfSideLength, halfSideLength),
+        cv::Rect(curCenter.x - halfSideLength, curCenter.y - halfSideLength, halfSideLength,
+                 halfSideLength),
+        cv::Rect(curCenter.x - halfSideLength, curCenter.y + 1, sideLength, halfSideLength),
+        cv::Rect(curCenter.x + 1, curCenter.y - halfSideLength, halfSideLength, halfSideLength),
+        cv::Rect(curCenter.x + 1, curCenter.y + 1, halfSideLength, halfSideLength)};
+
+    auto findBestOffset = [&](int idx, int startY, int endY, int signX, int signY, double factor) {
+        for (int biasY = startY; biasY <= endY; biasY++) {
+            cv::Point2i offset(signX * static_cast<int>(factor * biasY), signY * biasY);
+            cv::Rect targetROI = roiRects[idx] + offset;
+            double ssim = calculateSSIM(image(roiRects[idx]), image(targetROI));
+            if (ssim > ssimScores[idx]) {
+                ssimScores[idx] = ssim;
+                offsetVectors[idx] = offset;
+            }
+        }
+    };
+
+    int rangeY1[] = {2 * radius, 2 * radius + halfSideLength};
+    findBestOffset(0, rangeY1[0], rangeY1[1], 0, 1, 1.0);  // TOP
+    findBestOffset(3, rangeY1[0], rangeY1[1], 0, -1, 1.0); // BOT
+
+    int rangeY2[] = {radius, static_cast<int>(1.5 * radius)};
+    findBestOffset(1, rangeY2[0], rangeY2[1], 1, -1, sqrt(3));  // RTOP
+    findBestOffset(2, rangeY2[0], rangeY2[1], 1, 1, sqrt(3));   // RBOT
+    findBestOffset(4, rangeY2[0], rangeY2[1], -1, 1, sqrt(3));  // LBOT
+    findBestOffset(5, rangeY2[0], rangeY2[1], -1, -1, sqrt(3)); // LTOP
+
+    return offsetVectors;
+}
+
+// temp
 void analysis(const cv::Mat &image, const std::vector<cv::Point2d> &centers, int diameter) {
     cv::Mat processedImage;
 
