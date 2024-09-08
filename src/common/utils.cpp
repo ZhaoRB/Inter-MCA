@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/opencv.hpp>
 
 namespace MCA2 {
 cv::Mat getInputImage(const std::string &pathPattern, int idx) {
@@ -8,5 +9,49 @@ cv::Mat getInputImage(const std::string &pathPattern, int idx) {
     std::snprintf(filePath, sizeof(filePath), pathPattern.c_str(), idx);
     cv::Mat image = cv::imread(filePath, cv::IMREAD_COLOR);
     return image;
+}
+
+double computeSSIM(const cv::Mat &img1, const cv::Mat &img2) {
+    cv::Mat img1_gray, img2_gray;
+    cv::cvtColor(img1, img1_gray, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(img2, img2_gray, cv::COLOR_BGR2GRAY);
+
+    // 确保两幅图像大小相同
+    assert(img1_gray.size() == img2_gray.size());
+
+    // 图像转换为浮点型
+    cv::Mat img1_f, img2_f;
+    img1_gray.convertTo(img1_f, CV_32F);
+    img2_gray.convertTo(img2_f, CV_32F);
+
+    // 定义 SSIM 计算所需的变量
+    cv::Mat mu1, mu2, sigma1, sigma2, sigma12;
+    double C1 = 6.5025, C2 = 58.5225;
+
+    // 计算均值 (mu)
+    cv::GaussianBlur(img1_f, mu1, cv::Size(11, 11), 1.5);
+    cv::GaussianBlur(img2_f, mu2, cv::Size(11, 11), 1.5);
+
+    // 计算平方 (sigma)
+    cv::Mat mu1_mu1 = mu1.mul(mu1);
+    cv::Mat mu2_mu2 = mu2.mul(mu2);
+    cv::Mat mu1_mu2 = mu1.mul(mu2);
+
+    // 计算方差 (sigma)
+    cv::GaussianBlur(img1_f.mul(img1_f), sigma1, cv::Size(11, 11), 1.5);
+    cv::GaussianBlur(img2_f.mul(img2_f), sigma2, cv::Size(11, 11), 1.5);
+    cv::GaussianBlur(img1_f.mul(img2_f), sigma12, cv::Size(11, 11), 1.5);
+
+    sigma1 -= mu1_mu1;
+    sigma2 -= mu2_mu2;
+    sigma12 -= mu1_mu2;
+
+    // 计算 SSIM
+    cv::Mat ssim_map = ((2 * mu1_mu2 + C1).mul(2 * sigma12 + C2)) /
+                       ((mu1_mu1 + mu2_mu2 + C1).mul(sigma1 + sigma2 + C2));
+
+    // 取平均值
+    cv::Scalar mssim = cv::mean(ssim_map);
+    return mssim[0];
 }
 } // namespace MCA2

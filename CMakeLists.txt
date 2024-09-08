@@ -52,7 +52,6 @@ target_link_libraries(
     "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
 )
 
-
 # draw centers
 add_executable(
     MCA-Postprocess

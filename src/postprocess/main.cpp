@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
     parser.parseCalibXMLFile(taskInfo.calibrationFilePath, seqInfo);
 
     // postprocess
+    MCA2::PostProcessor postprocessor;
 
     return 0;
 }
