@@ -11,7 +11,7 @@ cv::Mat getInputImage(const std::string &pathPattern, int idx) {
     return image;
 }
 
-double computeSSIM(const cv::Mat &img1, const cv::Mat &img2) {
+double calculateSSIM(const cv::Mat &img1, const cv::Mat &img2) {
     cv::Mat img1_gray, img2_gray;
     cv::cvtColor(img1, img1_gray, cv::COLOR_BGR2GRAY);
     cv::cvtColor(img2, img2_gray, cv::COLOR_BGR2GRAY);

@@ -104,9 +104,9 @@ void Parser::calAllCenterPoints(SequenceInfo &seqInfo) {
     std::cout << "colGap: " << colGap.x << ", " << colGap.y << "\n"
               << "rowGap: " << rowGap.x << ", " << rowGap.y << std::endl;
 
-    std::cout << seqInfo.centers.size() << std::endl;
-    std::cout << "1: " << seqInfo.centers[0].x << ", " << seqInfo.centers[0].y << "\n"
-              << "2: " << seqInfo.centers[1].x << ", " << seqInfo.centers[1].y << std::endl;
+    std::cout << "Number of center points: " << seqInfo.centers.size() << std::endl;
+    std::cout << "ltop: " << seqInfo.centers[0].x << ", " << seqInfo.centers[0].y << "\n"
+              << "ltopOdd: " << seqInfo.centers[1].x << ", " << seqInfo.centers[1].y << std::endl;
 
     for (int i = 2; i < seqInfo.colNum; i++) {
         seqInfo.centers[i] = seqInfo.centers[i - 2] + colGap;
