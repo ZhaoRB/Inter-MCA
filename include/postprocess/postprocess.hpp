@@ -5,18 +5,7 @@
 // #include <string>
 
 namespace MCA2 {
-class PostProcessor {
-private:
-    cv::Mat croppedImage;
-    cv::Mat restoredImage;
-    SequenceInfo sequenceInfo;
+void postprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo);
 
-    void restorePatches();
-    void restoreCorners();
-
-public:
-    cv::Mat postprocess();
-
-    // PostProcessor(const std::string &croppedImagePaht, const std::string &restoredImagePath);
-};
+void restoreCroppedPatched(const cv::Mat &srcImage, cv::Mat &dstImage, const SequenceInfo &seqInfo);
 } // namespace MCA2

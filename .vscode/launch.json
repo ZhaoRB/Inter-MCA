@@ -10,7 +10,7 @@
             "name": "preprocess",
             "program": "${workspaceFolder}/build/MCA-Preprocess",
             "args": [
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test-pre.cfg",
             ],
             "cwd": "${workspaceFolder}"
         },
@@ -32,7 +32,7 @@
             "name": "postprocess",
             "program": "${workspaceFolder}/build/MCA-Postprocess",
             "args": [
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test-post.cfg",
             ],
             "cwd": "${workspaceFolder}"
         }

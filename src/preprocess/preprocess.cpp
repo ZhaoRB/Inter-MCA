@@ -20,9 +20,8 @@
 namespace MCA2 {
 /**
 
- */
+*/
 void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
-    // todo: 一个序列应该计算一次 predict vector 就够了
     int radius = static_cast<int>(seqInfo.diameter) / 2;
     int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
     int sideLength = 2 * halfSideLength + 1;
@@ -36,6 +35,7 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
             continue;
         }
 
+        // calculate offset vector
         if (!hasCalculateOffsetVector) {
             auto offsetVectors =
                 calculateOffsetVectors(image, seqInfo.centers, 1557, seqInfo.colNum, seqInfo.rowNum,
@@ -45,15 +45,17 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
             }
         }
 
-        // cv::Mat croppedImage = cv::Mat::zeros(
-        //     cv::Size(seqInfo.colNum * sideLength, seqInfo.rowNum * sideLength), CV_8UC3);
+        // crop and realign
+        cv::Mat croppedImage = cv::Mat::zeros(
+            cv::Size(seqInfo.colNum * sideLength, seqInfo.rowNum * sideLength), CV_8UC3);
 
-        // for (int idx = 0; idx < seqInfo.centers.size(); idx++) {
-        //     cv::Point2i center(cvRound(seqInfo.centers[idx].x), cvRound(seqInfo.centers[idx].y));
-        //     cropAndRealign(image, croppedImage, center, idx, seqInfo.colNum, sideLength);
-        // }
+        for (int idx = 0; idx < seqInfo.centers.size(); idx++) {
+            cv::Point2i center(cvRound(seqInfo.centers[idx].x), cvRound(seqInfo.centers[idx].y));
+            cropAndRealign(image, croppedImage, center, idx, seqInfo.colNum, sideLength);
+        }
 
-        // cv::imwrite(taskInfo.outputPath, croppedImage);
+        // todo: 这个 filename 应该还得改一下
+        cv::imwrite(taskInfo.outputPath, croppedImage);
     }
 };
 
@@ -101,7 +103,7 @@ calculateOffsetVectors(const cv::Mat &image, const std::vector<cv::Point2d> &cen
     std::array<cv::Point2i, NEIGHBOR_NUM> offsetVectors;
     std::array<double, NEIGHBOR_NUM> ssimScores = {}; // init as 0
 
-    for (auto ssim: ssimScores) {
+    for (auto ssim : ssimScores) {
         std::cout << ssim << std::endl;
     }
 
