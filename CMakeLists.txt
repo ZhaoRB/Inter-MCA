@@ -56,6 +56,8 @@ target_link_libraries(
 add_executable(
     MCA-Postprocess
     src/postprocess/main.cpp
+    src/postprocess/postprocess.cpp
+    src/common/utils.cpp
     src/common/parse.cpp
 )
 

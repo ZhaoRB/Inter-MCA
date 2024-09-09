@@ -13,9 +13,7 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo);
 void cropAndRealign(cv::Mat &rawImage, cv::Mat &croppedImage, cv::Point2i &center, int idx,
                     int colNum, int sideLength);
 
-// four corners = micro image - cropped patch
-std::array<cv::Mat, 4> getFourCornerMasks(const cv::Size &imageSize, cv::Point2i &center,
-                                          int radius);
+
 
 enum Direction { TOP, RTOP, RBOT, BOT, LBOT, LTOP };
 const int NEIGHBOR_NUM = 6;

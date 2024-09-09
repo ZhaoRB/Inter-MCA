@@ -72,31 +72,6 @@ void cropAndRealign(cv::Mat &rawImage, cv::Mat &croppedImage, cv::Point2i &cente
     croppedMicroImage.copyTo(croppedImage(targetROI));
 }
 
-// corner predict
-std::array<cv::Mat, 4> getFourCornerMasks(const cv::Size &imageSize, cv::Point2i &center,
-                                          int radius) {
-    int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
-    int sideLength = 2 * halfSideLength + 1, diameter = radius * 2 + 1;
-
-    std::array<cv::Mat, 4> fourCornersMasks;
-    for (auto &mask : fourCornersMasks) {
-        mask = cv::Mat::zeros(imageSize, CV_8UC1);
-        cv::circle(mask, center, radius, cv::Scalar(255), -1);
-    }
-
-    std::array<cv::Rect, 4> rectMasks;
-    int longEdge = diameter, shortEdge = halfSideLength + radius + 1;
-    rectMasks[0] = cv::Rect(center.x - radius, center.y - halfSideLength, longEdge, shortEdge);
-    rectMasks[1] = cv::Rect(center.x - radius, center.y - radius, shortEdge, longEdge);
-    rectMasks[2] = cv::Rect(center.x - radius, center.y - radius, longEdge, shortEdge);
-    rectMasks[3] = cv::Rect(center.x - halfSideLength, center.y - radius, shortEdge, longEdge);
-    for (int i = 0; i < 4; i++) {
-        cv::rectangle(fourCornersMasks[i], rectMasks[i], cv::Scalar(0), -1);
-    }
-
-    return fourCornersMasks;
-}
-
 std::array<cv::Point2i, NEIGHBOR_NUM>
 calculateOffsetVectors(const cv::Mat &image, const std::vector<cv::Point2d> &centers, int idx,
                        int colNum, int rowNu, int diameter) {
