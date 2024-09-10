@@ -25,6 +25,8 @@ void postprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
 
         // restore: step 1
         restoreCroppedPatched(preprocessedImage, restoredImage, seqInfo);
+        // cv::imwrite(taskInfo.outputPath, restoredImage);
+        restoreFourCorners(preprocessedImage, restoredImage, seqInfo);
         cv::imwrite(taskInfo.outputPath, restoredImage);
     }
 }
@@ -88,47 +90,48 @@ void restoreFourCorners(const cv::Mat &srcImage, cv::Mat &dstImage, const Sequen
     int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
     int sideLength = 2 * halfSideLength + 1;
 
-    std::array<cv::Point2i, 4> offsets = {cv::Point2i(0, 90), cv::Point2i(-77, -45),
-                                          cv::Point2i(0, -90), cv::Point2i(77, -45)};
+    std::cout << "Restoring four corners..." << std::endl;
+
+    std::array<cv::Point2i, 4> offsets = {cv::Point2i(0, 90), cv::Point2i(-77, -44),
+                                          cv::Point2i(0, -90), cv::Point2i(77, -44)};
 
     for (int i = 0; i < seqInfo.centers.size(); i++) {
         // todo：暂时排除第一行、第一列、最后一行、最后一列
         if (i / seqInfo.colNum == 0 || i % seqInfo.colNum == 0 ||
             i / seqInfo.colNum == seqInfo.rowNum - 1 || i % seqInfo.colNum == seqInfo.colNum - 1)
             continue;
+        
+        if (i % 100 == 0) {
+            std::cout << "Restoring micro image" << i << std::endl;
+        }
 
         cv::Point2i center(cvRound(seqInfo.centers[i].x), cvRound(seqInfo.centers[i].y));
         std::array<cv::Mat, 4> fourCornersMasks =
             getFourCornerMasks(dstImage.size(), center, radius);
 
-        cv::Rect dstMaskROI(0, 90, dstImage.cols, dstImage.rows - 90);
-        cv::Rect srcMaskROI(0, 90, dstImage.cols, dstImage.rows - 90);
+        for (int j = 0; j < 4; j++) {
+            copyTo(dstImage, fourCornersMasks[j], offsets[j]);
+        }
     }
 }
 
-// 用 dstMask 和 offset 计算 srcMask，将 src copy 到 dst
 void copyTo(cv::Mat &image, cv::Mat &dstMask, cv::Point2i &offset) {
-    int rectWidth = image.cols - abs(offset.x), rectHeight = image.rows - abs(offset.y);
-    cv::Point2i ltopSrc, ltopDst;
+    cv::Mat dstROI;
+    image.copyTo(dstROI, dstMask);
 
-    if (offset.x > 0) {
-        ltopDst.x = 0;
-        ltopSrc.x = offset.x;
-    } else {
-        ltopDst.x = -1 * offset.x;
-        ltopSrc.x = 0;
-    }
-    if (offset.y > 0) {
-        ltopDst.y = 0;
-        ltopSrc.y = offset.y;
-    } else {
-        ltopDst.y = -1 * offset.y;
-        ltopSrc.y = 0;
-    }
-    cv::Rect roiSrc(ltopSrc.x, ltopSrc.y, rectWidth, rectHeight);
-    cv::Rect roiDst(ltopDst.x, ltopDst.y, rectWidth, rectHeight);
+    cv::Rect dstBoundingBox = cv::boundingRect(dstMask);
+    cv::Rect srcBoundingBox = dstBoundingBox + offset;
 
-    cv::Mat srcMask = cv::Mat::zeros(dstMask.size(), CV_8UC1);
-    dstMask(roiDst).copyTo(srcMask(roiSrc));
+    if (srcBoundingBox.x < 0 || srcBoundingBox.y < 0 ||
+        srcBoundingBox.x + srcBoundingBox.width > image.cols ||
+        srcBoundingBox.y + srcBoundingBox.height > image.rows) {
+        std::cerr << "Error: srcROI is out of bounds." << std::endl;
+        return;
+    }
+
+    cv::Mat srcROI = image(srcBoundingBox); // 从 image 中获取源区域
+
+    srcROI.copyTo(image(dstBoundingBox), dstMask(dstBoundingBox));
 }
+
 } // namespace MCA2
