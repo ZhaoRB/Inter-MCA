@@ -1,3 +1,4 @@
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <opencv2/core/types.hpp>
@@ -7,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "data-structure.hpp"
 #include "parse.hpp"
 
 namespace MCA2 {
@@ -36,12 +38,19 @@ int Parser::parseConfigFile(std::string &configFilePath, TaskInfo &taskInfo) {
         config["end_frame"] = config["start_frame"];
     }
 
+    // todo: height width 是否保留？
     taskInfo = TaskInfo(config["Calibration_xml"], config["RawImage_Path"], config["Output_Path"],
                         std::stoi(config["start_frame"]), std::stoi(config["end_frame"]),
                         std::stoi(config["height"]), std::stoi(config["width"]));
     configFile.close();
 
     return 0;
+}
+
+void Parser::setRowAndColNums(SequenceInfo &seqInfo) {
+    seqInfo.colNum =
+        std::round((seqInfo.rtop.x - seqInfo.ltop.x) / (seqInfo.diameter / 2 * sqrt(3))) + 1;
+    seqInfo.rowNum = std::round((seqInfo.lbot.y - seqInfo.rbot.y) / seqInfo.diameter) + 1;
 }
 
 int Parser::parseCalibXMLFile(std::string &calibXMLFilePath, SequenceInfo &seqInfo) {
@@ -59,7 +68,6 @@ int Parser::parseCalibXMLFile(std::string &calibXMLFilePath, SequenceInfo &seqIn
     }
 
     seqInfo.diameter = root.child("diameter").text().as_double();
-    seqInfo.rotationAngle = root.child("rotation").text().as_double();
 
     const pugi::xml_node centerNode = root.child("centers");
     seqInfo.rowNum = centerNode.child("rows").text().as_int();
@@ -71,50 +79,40 @@ int Parser::parseCalibXMLFile(std::string &calibXMLFilePath, SequenceInfo &seqIn
                                centerNode.child("rtop").child("y").text().as_double());
     seqInfo.lbot = cv::Point2d(centerNode.child("lbot").child("x").text().as_double(),
                                centerNode.child("lbot").child("y").text().as_double());
+    seqInfo.rbot = cv::Point2d(centerNode.child("rbot").child("x").text().as_double(),
+                               centerNode.child("rbot").child("y").text().as_double());
 
-    if (!centerNode.child("rbot").empty()) {
-        seqInfo.isThreePoints = false;
-        seqInfo.rbot = cv::Point2d(centerNode.child("rbot").child("x").text().as_double(),
-                                   centerNode.child("rbot").child("y").text().as_double());
-    }
-
+    setRowAndColNums(seqInfo);
     calAllCenterPoints(seqInfo);
 
     return 0;
 }
 
 void Parser::calAllCenterPoints(SequenceInfo &seqInfo) {
-    double xBias = seqInfo.diameter / 2 * sqrt(3);
-    double yBias = seqInfo.diameter / 2;
-    cv::Point2d colGap, rowGap;
-    cv::Point2d ltopEven(seqInfo.ltop.x + xBias, seqInfo.ltop.y + yBias);
+    // TSPC: NewMiniGarden, Motherboard, HandTools
+    // colNum - 2, rtop 是倒数第二列
+    seqInfo.centers.resize(seqInfo.rowNum * seqInfo.colNum);
 
-    if (seqInfo.isThreePoints) {
-        colGap = (seqInfo.rtop - ltopEven) / (seqInfo.colNum / 2 - 1);
-        rowGap = (seqInfo.lbot - seqInfo.ltop) / (seqInfo.rowNum - 1);
+    cv::Point2d disCol = seqInfo.rtop - seqInfo.ltop;
 
-    } else {
-        // todo
-    }
+    // todo: 优化赋值过程
+    for (int col = 0; col < seqInfo.colNum; ++col) {
+        double ratioL = (static_cast<double>(seqInfo.colNum) - 1 - col) /
+                        (static_cast<double>(seqInfo.colNum) - 1);
+        double ratioR = col / (static_cast<double>(seqInfo.colNum) - 1);
 
-    seqInfo.centers.resize(seqInfo.colNum * seqInfo.rowNum);
-    seqInfo.centers[0] = seqInfo.ltop;
-    seqInfo.centers[1] = ltopEven;
+        cv::Point2d disRow =
+            (ratioL * (seqInfo.lbot - seqInfo.ltop) + ratioR * (seqInfo.rbot - seqInfo.rtop)) /
+            (seqInfo.rowNum - 1);
+        
+        cv::Point2d firstPointOfColumn = seqInfo.ltop + disCol * col;
+        if (col % 2 == 1) {
+            firstPointOfColumn = firstPointOfColumn + disRow / 2;
+        }
+        seqInfo.centers[col] = firstPointOfColumn;
 
-    std::cout << "colGap: " << colGap.x << ", " << colGap.y << "\n"
-              << "rowGap: " << rowGap.x << ", " << rowGap.y << std::endl;
-
-    std::cout << "Number of center points: " << seqInfo.centers.size() << std::endl;
-    std::cout << "ltop: " << seqInfo.centers[0].x << ", " << seqInfo.centers[0].y << "\n"
-              << "ltopOdd: " << seqInfo.centers[1].x << ", " << seqInfo.centers[1].y << std::endl;
-
-    for (int i = 2; i < seqInfo.colNum; i++) {
-        seqInfo.centers[i] = seqInfo.centers[i - 2] + colGap;
-    }
-    for (int i = 1; i < seqInfo.rowNum; i++) {
-        for (int j = 0; j < seqInfo.colNum; j++) {
-            seqInfo.centers[i * seqInfo.colNum + j] =
-                seqInfo.centers[(i - 1) * seqInfo.colNum + j] + rowGap;
+        for (int row = 1; row < seqInfo.rowNum; ++row) {
+            seqInfo.centers[row * seqInfo.colNum + col] = firstPointOfColumn + row * disRow;
         }
     }
 }

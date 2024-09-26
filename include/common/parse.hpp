@@ -13,8 +13,10 @@ namespace MCA2 {
 class Parser {
 private:
     void calAllCenterPoints(SequenceInfo &seqInfo);
-    void parsePath(); // todo
+    
+    void setRowAndColNums(SequenceInfo &seqInfo);
 
+    void parsePath(); // todo
     bool hasFormatSpecifier(const std::string &str);
 
 public:

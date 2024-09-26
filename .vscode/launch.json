@@ -10,20 +10,8 @@
             "name": "preprocess",
             "program": "${workspaceFolder}/build/MCA-Preprocess",
             "args": [
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test-pre.cfg",
-                // "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/TSPC/Boys/pre.cfg",
-            ],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "draw-center",
-            "program": "${workspaceFolder}/build/Draw-Centers",
-            "args": [
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test.cfg",
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/raw/miniGarden.bmp",
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/center/miniGargen-center-cpp.png"
+                // "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test-pre.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/Boys/pre.cfg",
             ],
             "cwd": "${workspaceFolder}"
         },
@@ -33,10 +21,22 @@
             "name": "postprocess",
             "program": "${workspaceFolder}/build/MCA-Postprocess",
             "args": [
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test-post.cfg",
-                // "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/TSPC/Boys/post.cfg",
+                // "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test-post.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/Boys/post.cfg",
             ],
             "cwd": "${workspaceFolder}"
-        }
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "draw-center",
+            "program": "${workspaceFolder}/build/Draw-Centers",
+            "args": [
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/Boys/test.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/raw/boys_final.png",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/center/boys_final_center.png"
+            ],
+            "cwd": "${workspaceFolder}"
+        },
     ]
 }

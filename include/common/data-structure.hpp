@@ -28,7 +28,7 @@ struct TaskInfo {
 
 struct SequenceInfo {
     int width, height, rowNum, colNum;
-    double diameter, rotationAngle;
+    double diameter;
     cv::Point2d ltop, rtop, lbot, rbot;
 
     bool isThreePoints;
