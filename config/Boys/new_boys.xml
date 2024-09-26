@@ -2,19 +2,21 @@
   <diameter unit="pix">70</diameter>
   <rotation unit="rad">1.57079632679</rotation>
   <centers>
-    <rows>42</rows>
-    <cols>66</cols>
     <ltop>
-      <x>45.75</x>
-      <y>91.75</y>
+      <x>35.7</x>
+      <y>36.9</y>
     </ltop>
     <rtop>
-      <x>4011.25</x>
-      <y>80.5</y>
+      <x>3939.5</x>
+      <y>35.2</y>
     </rtop>
     <lbot>
-      <x>29.75</x>
-      <y>2972.5</y>
+      <x>38.2</x>
+      <y>2915.2</y>
     </lbot>
+    <rbot>
+      <x>3939.6</x>
+      <y>2920.3</y>
+    </rbot>
   </centers>
 </TSPCCalibData>

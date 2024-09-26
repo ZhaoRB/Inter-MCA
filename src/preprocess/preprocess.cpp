@@ -38,7 +38,7 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
         // calculate offset vector
         if (!hasCalculateOffsetVector) {
             auto offsetVectors =
-                calculateOffsetVectors(image, seqInfo.centers, 1557, seqInfo.colNum, seqInfo.rowNum,
+                calculateOffsetVectors(image, seqInfo.centers, 1430, seqInfo.colNum, seqInfo.rowNum,
                                        static_cast<int>(seqInfo.diameter));
             for (auto &offset : offsetVectors) {
                 std::cout << offset.x << ", " << offset.y << std::endl;
@@ -145,71 +145,4 @@ calculateOffsetVectors(const cv::Mat &image, const std::vector<cv::Point2d> &cen
 
     return offsetVectors;
 }
-
-// temp
-void analysis(const cv::Mat &image, const std::vector<cv::Point2d> &centers, int diameter) {
-    cv::Mat processedImage;
-
-    int radius = diameter / 2;
-    int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
-
-    cv::Mat maskCircles = cv::Mat::zeros(image.size(), CV_8UC1);
-    for (auto &center_d : centers) {
-        cv::Point2i center(std::round(center_d.x), std::round(center_d.y));
-        cv::circle(maskCircles, center, radius, cv::Scalar(255), -1);
-    }
-
-    cv::copyTo(image, processedImage, maskCircles);
-    cv::imwrite("/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/temp/MIs.png",
-                processedImage);
-
-    // cv::Mat maskRects = cv::Mat::ones(image.size(), CV_8UC1);
-    // int biasX = 1, biasY = 1;
-
-    // for (auto &center_d : centers) {
-    //     cv::Point2i center(std::round(center_d.x) + biasX, std::round(center_d.y) + biasY);
-    //     cv::Rect rect(center.x - halfSideLength, center.y - halfSideLength, sideLength,
-    //     sideLength); cv::rectangle(maskRects, rect, cv::Scalar(0), -1);
-    // }
-    for (auto &center_d : centers) {
-        cv::Point2i center(std::round(center_d.x), std::round(center_d.y));
-        cv::rectangle(processedImage,
-                      cv::Point2i(center.x - halfSideLength, center.y - halfSideLength),
-                      cv::Point2i(center.x + halfSideLength, center.y + halfSideLength),
-                      cv::Scalar(255, 0, 0), -1);
-    }
-
-    cv::imwrite("/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/temp/four-corners.png",
-                processedImage);
-}
-
-void analysis2() {
-    int w = 100, h = 100, diameter = 39;
-    int radius = diameter / 2;
-
-    int halfSideLength = std::round(static_cast<double>(radius) / sqrt(2));
-
-    std::cout << "diameter: " << diameter << std::endl;
-    std::cout << "radius: " << radius << std::endl;
-
-    cv::Point2d center(50, 50);
-    cv::Mat canvas = cv::Mat::zeros(cv::Size2d(w, h), CV_8UC1);
-    cv::circle(canvas, center, radius, cv::Scalar(255), -1);
-
-    cv::Point2d ltop(center.x - halfSideLength, center.y - halfSideLength);
-    cv::Point2d rbot(center.x + halfSideLength, center.y + halfSideLength);
-    cv::rectangle(canvas, ltop, rbot, cv::Scalar(150), -1);
-
-    int count = 0;
-    for (int i = 1; i < w + 1; i++) {
-        if (static_cast<int>(canvas.at<uchar>(50, i)) != 0) {
-            // canvas.at<uchar>(50, i) = 100;
-            count++;
-        }
-    }
-    std::cout << "count: " << count << std::endl;
-
-    cv::imwrite("/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/temp/test.png", canvas);
-}
-
 } // namespace MCA2

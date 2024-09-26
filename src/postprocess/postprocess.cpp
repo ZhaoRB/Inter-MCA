@@ -92,15 +92,15 @@ void restoreFourCorners(const cv::Mat &srcImage, cv::Mat &dstImage, const Sequen
 
     std::cout << "Restoring four corners..." << std::endl;
 
-    std::array<cv::Point2i, 4> offsets = {cv::Point2i(0, 90), cv::Point2i(-77, -44),
-                                          cv::Point2i(0, -90), cv::Point2i(77, -44)};
+    std::array<cv::Point2i, 4> offsets = {cv::Point2i(0, 87), cv::Point2i(-76, -44),
+                                          cv::Point2i(0, -87), cv::Point2i(76, -44)};
 
     for (int i = 0; i < seqInfo.centers.size(); i++) {
         // todo：暂时排除第一行、第一列、最后一行、最后一列
         if (i / seqInfo.colNum == 0 || i % seqInfo.colNum == 0 ||
             i / seqInfo.colNum == seqInfo.rowNum - 1 || i % seqInfo.colNum == seqInfo.colNum - 1)
             continue;
-        
+
         if (i % 100 == 0) {
             std::cout << "Restoring micro image" << i << std::endl;
         }
