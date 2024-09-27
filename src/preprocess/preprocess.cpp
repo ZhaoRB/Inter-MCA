@@ -16,8 +16,10 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace MCA2 {
 
@@ -52,19 +54,19 @@ void Preprocessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo)
     // count
     std::array<std::unordered_map<std::string, int>, NeighborNum> countMap;
 
-    std::array<cv::Point2i, NeighborNum> offsetVectors;
+    std::array<cv::Point2i, NeighborNum> tmpOffsets;
     std::array<double, NeighborNum> ssimScores;
 
     std::ofstream logFile(
         "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/temp/logfile.log",
-        std::ios::app);
+        std::ios::out);
 
     for (int i = 1; i < seqInfo.colNum - 1; i++) {
         for (int j = 1; j < seqInfo.rowNum - 1; j++) {
             for (auto ssim : ssimScores) {
                 ssim = 0;
             }
-            logFile << "MI: col " << i << " ,row " << j << std::endl;
+            // logFile << "MI: col " << i << " ,row " << j << std::endl;
 
             cv::Point2i curCenter(std::round(seqInfo.centers[i * seqInfo.rowNum + j].x),
                                   std::round(seqInfo.centers[i * seqInfo.rowNum + j].y));
@@ -85,20 +87,19 @@ void Preprocessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo)
             auto findBestOffset = [&](int idx, int startY, int endY, int signX, int signY,
                                       double factor) {
                 for (int biasY = startY; biasY <= endY; biasY++) {
-                    for (int bias = -1; bias < 2; bias++) {
-                        int biasX = static_cast<int>(factor * biasY) + bias;
-                        cv::Point2i offset(signX * biasX, signY * biasY);
-                        cv::Rect targetROI = roiRects[idx] + offset;
-                        double ssim = calculateSSIM(image(roiRects[idx]), image(targetROI));
-                        if (ssim > ssimScores[idx]) {
-                            ssimScores[idx] = ssim;
-                            offsetVectors[idx] = offset;
-                        }
+                    // for (int bias = -1; bias < 2; bias++)
+                    int biasX = static_cast<int>(factor * biasY);
+                    cv::Point2i offset(signX * biasX, signY * biasY);
+                    cv::Rect targetROI = roiRects[idx] + offset;
+                    double ssim = calculateSSIM(image(roiRects[idx]), image(targetROI));
+                    if (ssim > ssimScores[idx]) {
+                        ssimScores[idx] = ssim;
+                        tmpOffsets[idx] = offset;
                     }
                 }
-                logFile << "index: " << idx << "; ssim score: " << ssimScores[idx]
-                        << "; offset: " << offsetVectors[idx].x << ", " << offsetVectors[idx].y
-                        << std::endl;
+                // logFile << "index: " << idx << "; ssim score: " << ssimScores[idx]
+                //         << "; offset: " << tmpOffsets[idx].x << ", " << tmpOffsets[idx].y
+                //         << std::endl;
             };
 
             int rangeY1[] = {2 * radius, 2 * radius + halfSideLength};
@@ -110,7 +111,30 @@ void Preprocessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo)
             findBestOffset(2, rangeY2[0], rangeY2[1], 1, 1, sqrt(3));   // RBOT
             findBestOffset(4, rangeY2[0], rangeY2[1], -1, 1, sqrt(3));  // LBOT
             findBestOffset(5, rangeY2[0], rangeY2[1], -1, -1, sqrt(3)); // LTOP
+
+            for (int i = 0; i < NeighborNum; i++) {
+                std::ostringstream oss;
+                oss << tmpOffsets[i].x << "," << tmpOffsets[i].y;
+                std::string key = oss.str();
+                countMap[i][key] += 1;
+            }
         }
+    }
+
+    std::vector<std::string> pos = {"top", "rtop", "rbot", "bot", "lbot", "ltop"};
+    for (int i = 0; i < NeighborNum; i++) {
+        logFile << pos[i] << ":" << std::endl;
+        int max = 0;
+        for (const auto &pair : countMap[i]) {
+            logFile << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+            if (pair.second > max) {
+                max = pair.second;
+                size_t commaPos = pair.first.find(',');
+                offsets[i].x = std::stoi(pair.first.substr(0, commaPos));
+                offsets[i].y = std::stoi(pair.first.substr(commaPos + 1));
+            }
+        }
+        logFile << offsets[i].x << ", " << offsets[i].y << std::endl;
     }
 
     logFile.close();
