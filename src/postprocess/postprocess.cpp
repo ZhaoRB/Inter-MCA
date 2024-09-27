@@ -12,7 +12,7 @@ namespace MCA2 {
 void postprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
     for (int i = taskInfo.startFrame; i <= taskInfo.endFrame; i++) {
         // read image
-        cv::Mat preprocessedImage = getInputImage(taskInfo.inputPath, i);
+        cv::Mat preprocessedImage = cv::imread(getPath(taskInfo.inputPath, i));
         if (preprocessedImage.empty()) {
             std::cout << "[Warning] Image not found: " << taskInfo.inputPath << std::endl;
             continue;

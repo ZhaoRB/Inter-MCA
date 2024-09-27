@@ -25,15 +25,17 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
     int sideLength = 2 * halfSideLength + 1;
     bool hasCalculateOffsetVector = false;
 
+    // 1. 计算 offset vector（edge micro image 不计算）
+
     for (int i = taskInfo.startFrame; i <= taskInfo.endFrame; i++) {
         // read image
-        cv::Mat image = getInputImage(taskInfo.inputPath, i);
+        cv::Mat image = cv::imread(getPath(taskInfo.inputPath, i));
         if (image.empty()) {
             std::cout << "[Warning] Image not found: " << taskInfo.inputPath << std::endl;
             continue;
         }
 
-        // calculate offset vector
+        // calculate offset vector, once for a sequence
         if (!hasCalculateOffsetVector) {
             auto offsetVectors =
                 calculateOffsetVectors(image, seqInfo.centers, 1430, seqInfo.colNum, seqInfo.rowNum,
@@ -53,7 +55,7 @@ void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
         }
 
         // todo: 这个 filename 应该还得改一下
-        cv::imwrite(taskInfo.outputPath, croppedImage);
+        cv::imwrite(getPath(taskInfo.outputPath, i), croppedImage);
     }
 };
 

@@ -2,13 +2,13 @@
 
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
+#include <string>
 
 namespace MCA2 {
-cv::Mat getInputImage(const std::string &pathPattern, int idx) {
+std::string getPath(const std::string &pathPattern, int idx) {
     char filePath[256];
     std::snprintf(filePath, sizeof(filePath), pathPattern.c_str(), idx);
-    cv::Mat image = cv::imread(filePath, cv::IMREAD_COLOR);
-    return image;
+    return std::string(filePath);
 }
 
 double calculateSSIM(const cv::Mat &img1, const cv::Mat &img2) {
