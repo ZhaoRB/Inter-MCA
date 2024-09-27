@@ -21,6 +21,9 @@ private:
 
     void calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo);
 
+    void calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Point2i &curCenter,
+                                   std::array<double, NeighborNum> &ssimScores,
+                                   std::array<cv::Point2i, NeighborNum> &tmpOffsets);
 
 public:
     Preprocessor() {};

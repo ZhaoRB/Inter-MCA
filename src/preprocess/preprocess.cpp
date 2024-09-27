@@ -4,7 +4,6 @@
 
 #include <array>
 #include <cmath>
-#include <fstream>
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/core/fast_math.hpp>
@@ -50,6 +49,48 @@ void Preprocessor::preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
     // }
 };
 
+void Preprocessor::calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Point2i &curCenter,
+                                             std::array<double, NeighborNum> &ssimScores,
+                                             std::array<cv::Point2i, NeighborNum> &tmpOffsets) {
+    std::array<cv::Rect, NeighborNum> roiRects = {
+        cv::Rect(curCenter.x - halfSideLength, curCenter.y + 1, sideLength,
+                 halfSideLength), // TOP
+        cv::Rect(curCenter.x - halfSideLength, curCenter.y + 1, halfSideLength,
+                 halfSideLength), // RTOP
+        cv::Rect(curCenter.x - halfSideLength, curCenter.y - halfSideLength, halfSideLength,
+                 halfSideLength), // RBOT
+        cv::Rect(curCenter.x - halfSideLength, curCenter.y - halfSideLength, sideLength,
+                 halfSideLength), // BOT
+        cv::Rect(curCenter.x + 1, curCenter.y - halfSideLength, halfSideLength,
+                 halfSideLength),                                                    // LBOT
+        cv::Rect(curCenter.x + 1, curCenter.y + 1, halfSideLength, halfSideLength)}; // LTOP
+
+    auto findBestOffset = [&](int idx, int startY, int endY, int signX, int signY, double factor) {
+        for (int biasY = startY; biasY <= endY; biasY++) {
+            for (int bias = -1; bias < 2; bias++) {
+                int biasX = static_cast<int>(factor * biasY) + bias;
+                cv::Point2i offset(signX * biasX, signY * biasY);
+                cv::Rect targetROI = roiRects[idx] + offset;
+                double ssim = calculateSSIM(image(roiRects[idx]), image(targetROI));
+                if (ssim > ssimScores[idx]) {
+                    ssimScores[idx] = ssim;
+                    tmpOffsets[idx] = offset;
+                }
+            }
+        }
+    };
+
+    int rangeY1[] = {2 * radius, 2 * radius + halfSideLength};
+    findBestOffset(0, rangeY1[0], rangeY1[1], 0, -1, 1.0); // TOP
+    findBestOffset(3, rangeY1[0], rangeY1[1], 0, 1, 1.0);  // BOT
+
+    int rangeY2[] = {radius, static_cast<int>(1.5 * radius)};
+    findBestOffset(1, rangeY2[0], rangeY2[1], 1, -1, sqrt(3));  // RTOP
+    findBestOffset(2, rangeY2[0], rangeY2[1], 1, 1, sqrt(3));   // RBOT
+    findBestOffset(4, rangeY2[0], rangeY2[1], -1, 1, sqrt(3));  // LBOT
+    findBestOffset(5, rangeY2[0], rangeY2[1], -1, -1, sqrt(3)); // LTOP
+}
+
 void Preprocessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo) {
     // count
     std::array<std::unordered_map<std::string, int>, NeighborNum> countMap;
@@ -57,60 +98,14 @@ void Preprocessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo)
     std::array<cv::Point2i, NeighborNum> tmpOffsets;
     std::array<double, NeighborNum> ssimScores;
 
-    std::ofstream logFile(
-        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/temp/logfile.log",
-        std::ios::out);
-
     for (int i = 1; i < seqInfo.colNum - 1; i++) {
         for (int j = 1; j < seqInfo.rowNum - 1; j++) {
-            for (auto ssim : ssimScores) {
-                ssim = 0;
-            }
-            // logFile << "MI: col " << i << " ,row " << j << std::endl;
+            std::fill(ssimScores.begin(), ssimScores.end(), 0);
 
             cv::Point2i curCenter(std::round(seqInfo.centers[i * seqInfo.rowNum + j].x),
                                   std::round(seqInfo.centers[i * seqInfo.rowNum + j].y));
 
-            std::array<cv::Rect, NeighborNum> roiRects = {
-                cv::Rect(curCenter.x - halfSideLength, curCenter.y + 1, sideLength,
-                         halfSideLength), // TOP
-                cv::Rect(curCenter.x - halfSideLength, curCenter.y + 1, halfSideLength,
-                         halfSideLength), // RTOP
-                cv::Rect(curCenter.x - halfSideLength, curCenter.y - halfSideLength, halfSideLength,
-                         halfSideLength), // RBOT
-                cv::Rect(curCenter.x - halfSideLength, curCenter.y - halfSideLength, sideLength,
-                         halfSideLength), // BOT
-                cv::Rect(curCenter.x + 1, curCenter.y - halfSideLength, halfSideLength,
-                         halfSideLength),                                                    // LBOT
-                cv::Rect(curCenter.x + 1, curCenter.y + 1, halfSideLength, halfSideLength)}; // LTOP
-
-            auto findBestOffset = [&](int idx, int startY, int endY, int signX, int signY,
-                                      double factor) {
-                for (int biasY = startY; biasY <= endY; biasY++) {
-                    // for (int bias = -1; bias < 2; bias++)
-                    int biasX = static_cast<int>(factor * biasY);
-                    cv::Point2i offset(signX * biasX, signY * biasY);
-                    cv::Rect targetROI = roiRects[idx] + offset;
-                    double ssim = calculateSSIM(image(roiRects[idx]), image(targetROI));
-                    if (ssim > ssimScores[idx]) {
-                        ssimScores[idx] = ssim;
-                        tmpOffsets[idx] = offset;
-                    }
-                }
-                // logFile << "index: " << idx << "; ssim score: " << ssimScores[idx]
-                //         << "; offset: " << tmpOffsets[idx].x << ", " << tmpOffsets[idx].y
-                //         << std::endl;
-            };
-
-            int rangeY1[] = {2 * radius, 2 * radius + halfSideLength};
-            findBestOffset(0, rangeY1[0], rangeY1[1], 0, -1, 1.0); // TOP
-            findBestOffset(3, rangeY1[0], rangeY1[1], 0, 1, 1.0);  // BOT
-
-            int rangeY2[] = {radius, static_cast<int>(1.5 * radius)};
-            findBestOffset(1, rangeY2[0], rangeY2[1], 1, -1, sqrt(3));  // RTOP
-            findBestOffset(2, rangeY2[0], rangeY2[1], 1, 1, sqrt(3));   // RBOT
-            findBestOffset(4, rangeY2[0], rangeY2[1], -1, 1, sqrt(3));  // LBOT
-            findBestOffset(5, rangeY2[0], rangeY2[1], -1, -1, sqrt(3)); // LTOP
+            calOffsetVectorsFromOneMI(image, curCenter, ssimScores, tmpOffsets);
 
             for (int i = 0; i < NeighborNum; i++) {
                 std::ostringstream oss;
@@ -123,10 +118,10 @@ void Preprocessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo)
 
     std::vector<std::string> pos = {"top", "rtop", "rbot", "bot", "lbot", "ltop"};
     for (int i = 0; i < NeighborNum; i++) {
-        logFile << pos[i] << ":" << std::endl;
+        std::cout << pos[i] << ":" << std::endl;
         int max = 0;
         for (const auto &pair : countMap[i]) {
-            logFile << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+            std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
             if (pair.second > max) {
                 max = pair.second;
                 size_t commaPos = pair.first.find(',');
@@ -134,10 +129,8 @@ void Preprocessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo)
                 offsets[i].y = std::stoi(pair.first.substr(commaPos + 1));
             }
         }
-        logFile << offsets[i].x << ", " << offsets[i].y << std::endl;
+        std::cout << offsets[i].x << ", " << offsets[i].y << std::endl;
     }
-
-    logFile.close();
 }
 
 // MCA
