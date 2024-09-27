@@ -13,14 +13,16 @@ namespace MCA2 {
 class Parser {
 private:
     void calAllCenterPoints(SequenceInfo &seqInfo);
-    
+
     void setRowAndColNums(SequenceInfo &seqInfo);
 
     void parsePath(); // todo
+
     bool hasFormatSpecifier(const std::string &str);
 
 public:
     int parseConfigFile(std::string &cfgFilePath, TaskInfo &taskInfo);
+
     int parseCalibXMLFile(std::string &calibXMLFilePath, SequenceInfo &seqInfo);
 };
 

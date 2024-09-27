@@ -30,22 +30,17 @@ void drawCenters(const std::vector<cv::Point2d> &centers, double diameter, std::
 }
 
 int main(int argc, char **argv) {
-    if (argc != 4) {
-        std::cerr << "Usage: " << argv[0] << " <config_file_path>" << "<input path>"
-                  << "<output path>" << std::endl;
-        return 1;
-    }
-    std::string configFilePath = argv[1];
-    std::string inputPath = argv[2];
-    std::string outputPath = argv[3];
+    std::string calibFilePath = "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/"
+                                "NewMiniGarden/new_minigarden.xml";
+    std::string inputPath = "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/raw/"
+                            "cropAndRotate_motherboard.bmp";
+    std::string outputPath = "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/center/"
+                             "cropAndRotate_motherboard.png";
 
     MCA2::SequenceInfo seqInfo;
-    MCA2::TaskInfo taskInfo;
 
-    // Parse the configuration file
     MCA2::Parser parser;
-    parser.parseConfigFile(configFilePath, taskInfo);
-    parser.parseCalibXMLFile(taskInfo.calibrationFilePath, seqInfo);
+    parser.parseCalibXMLFile(calibFilePath, seqInfo);
 
     drawCenters(seqInfo.centers, seqInfo.diameter, inputPath, outputPath);
 

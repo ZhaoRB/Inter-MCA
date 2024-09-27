@@ -7,13 +7,13 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 #include "data-structure.hpp"
 #include "parse.hpp"
 
 namespace MCA2 {
 
-// private functions
 int Parser::parseConfigFile(std::string &configFilePath, TaskInfo &taskInfo) {
     std::ifstream configFile(configFilePath);
     std::unordered_map<std::string, std::string> config;
@@ -38,10 +38,8 @@ int Parser::parseConfigFile(std::string &configFilePath, TaskInfo &taskInfo) {
         config["end_frame"] = config["start_frame"];
     }
 
-    // todo: height width 是否保留？
     taskInfo = TaskInfo(config["Calibration_xml"], config["RawImage_Path"], config["Output_Path"],
-                        std::stoi(config["start_frame"]), std::stoi(config["end_frame"]),
-                        std::stoi(config["height"]), std::stoi(config["width"]));
+                        std::stoi(config["start_frame"]), std::stoi(config["end_frame"]));
     configFile.close();
 
     return 0;
@@ -50,7 +48,12 @@ int Parser::parseConfigFile(std::string &configFilePath, TaskInfo &taskInfo) {
 void Parser::setRowAndColNums(SequenceInfo &seqInfo) {
     seqInfo.colNum =
         std::round((seqInfo.rtop.x - seqInfo.ltop.x) / (seqInfo.diameter / 2 * sqrt(3))) + 1;
-    seqInfo.rowNum = std::round((seqInfo.lbot.y - seqInfo.rbot.y) / seqInfo.diameter) + 1;
+
+    if (seqInfo.rtop.x + seqInfo.diameter / 2 * sqrt(3) < seqInfo.width) {
+        seqInfo.colNum = seqInfo.colNum + 1;
+    }
+
+    seqInfo.rowNum = std::round((seqInfo.lbot.y - seqInfo.ltop.y) / seqInfo.diameter) + 1;
 }
 
 int Parser::parseCalibXMLFile(std::string &calibXMLFilePath, SequenceInfo &seqInfo) {
@@ -68,11 +71,11 @@ int Parser::parseCalibXMLFile(std::string &calibXMLFilePath, SequenceInfo &seqIn
     }
 
     seqInfo.diameter = root.child("diameter").text().as_double();
+    seqInfo.direction = root.child("direction").text().as_int();
+    seqInfo.width = root.child("width").text().as_int();
+    seqInfo.height = root.child("height").text().as_int();
 
     const pugi::xml_node centerNode = root.child("centers");
-    seqInfo.rowNum = centerNode.child("rows").text().as_int();
-    seqInfo.colNum = centerNode.child("cols").text().as_int();
-
     seqInfo.ltop = cv::Point2d(centerNode.child("ltop").child("x").text().as_double(),
                                centerNode.child("ltop").child("y").text().as_double());
     seqInfo.rtop = cv::Point2d(centerNode.child("rtop").child("x").text().as_double(),
@@ -83,19 +86,27 @@ int Parser::parseCalibXMLFile(std::string &calibXMLFilePath, SequenceInfo &seqIn
                                centerNode.child("rbot").child("y").text().as_double());
 
     setRowAndColNums(seqInfo);
+
+    // transpose (Raytrix R8 R32)
+    if (seqInfo.direction == 1) {
+        std::swap(seqInfo.rtop, seqInfo.lbot);
+        std::swap(seqInfo.colNum, seqInfo.rowNum);
+    }
+
     calAllCenterPoints(seqInfo);
 
     return 0;
 }
 
 void Parser::calAllCenterPoints(SequenceInfo &seqInfo) {
-    // TSPC: NewMiniGarden, Motherboard, HandTools
-    // colNum - 2, rtop 是倒数第二列
+
     seqInfo.centers.resize(seqInfo.rowNum * seqInfo.colNum);
 
-    cv::Point2d disCol = seqInfo.rtop - seqInfo.ltop;
+    // if column num is odd number, rtop and rbot are in the last column
+    int gapColNum = seqInfo.colNum % 2 == 1 ? seqInfo.colNum - 1 : seqInfo.colNum - 2;
+    cv::Point2d disCol = (seqInfo.rtop - seqInfo.ltop) / gapColNum;
 
-    // todo: 优化赋值过程
+    int idx = 0;
     for (int col = 0; col < seqInfo.colNum; ++col) {
         double ratioL = (static_cast<double>(seqInfo.colNum) - 1 - col) /
                         (static_cast<double>(seqInfo.colNum) - 1);
@@ -104,15 +115,16 @@ void Parser::calAllCenterPoints(SequenceInfo &seqInfo) {
         cv::Point2d disRow =
             (ratioL * (seqInfo.lbot - seqInfo.ltop) + ratioR * (seqInfo.rbot - seqInfo.rtop)) /
             (seqInfo.rowNum - 1);
-        
+
         cv::Point2d firstPointOfColumn = seqInfo.ltop + disCol * col;
         if (col % 2 == 1) {
             firstPointOfColumn = firstPointOfColumn + disRow / 2;
         }
-        seqInfo.centers[col] = firstPointOfColumn;
+
+        seqInfo.centers[idx++] = firstPointOfColumn;
 
         for (int row = 1; row < seqInfo.rowNum; ++row) {
-            seqInfo.centers[row * seqInfo.colNum + col] = firstPointOfColumn + row * disRow;
+            seqInfo.centers[idx++] = firstPointOfColumn + row * disRow;
         }
     }
 }

@@ -18,9 +18,7 @@
 #include <string>
 
 namespace MCA2 {
-/**
 
-*/
 void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
     int radius = static_cast<int>(seqInfo.diameter) / 2;
     int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
