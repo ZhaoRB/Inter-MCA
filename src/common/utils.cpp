@@ -54,4 +54,18 @@ double calculateSSIM(const cv::Mat &img1, const cv::Mat &img2) {
     cv::Scalar mssim = cv::mean(ssim_map);
     return mssim[0];
 }
+
+// 判断字符串中有没有通配符
+bool hasFormatSpecifier(const std::string &str) {
+    static const std::string formatSpecifiers = "cdfsfeEgGxXo";
+
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (str[i] == '%') {
+            if (i + 1 < str.length() && formatSpecifiers.find(str[i + 1]) != std::string::npos) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 } // namespace MCA2

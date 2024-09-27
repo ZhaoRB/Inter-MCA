@@ -16,10 +16,6 @@ private:
 
     void setRowAndColNums(SequenceInfo &seqInfo);
 
-    void parsePath(); // todo
-
-    bool hasFormatSpecifier(const std::string &str);
-
 public:
     int parseConfigFile(std::string &cfgFilePath, TaskInfo &taskInfo);
 

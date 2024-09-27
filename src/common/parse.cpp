@@ -11,6 +11,7 @@
 
 #include "data-structure.hpp"
 #include "parse.hpp"
+#include "utils.hpp"
 
 namespace MCA2 {
 
@@ -127,21 +128,6 @@ void Parser::calAllCenterPoints(SequenceInfo &seqInfo) {
             seqInfo.centers[idx++] = firstPointOfColumn + row * disRow;
         }
     }
-}
-
-void Parser::parsePath() {}; // todo
-
-bool Parser::hasFormatSpecifier(const std::string &str) {
-    static const std::string formatSpecifiers = "cdfsfeEgGxXo";
-
-    for (size_t i = 0; i < str.length(); ++i) {
-        if (str[i] == '%') {
-            if (i + 1 < str.length() && formatSpecifiers.find(str[i + 1]) != std::string::npos) {
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 } // namespace MCA2

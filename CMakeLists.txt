@@ -35,6 +35,7 @@ add_executable(
     Draw-Centers
     src/draw-center/main.cpp
     src/common/parse.cpp
+    src/common/utils.cpp
 )
 
 target_include_directories(
