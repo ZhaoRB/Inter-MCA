@@ -12,7 +12,7 @@ add_executable(
     src/common/utils.cpp
 )
 
-target_compile_features(MCA-Preprocess PRIVATE cxx_std_11)
+target_compile_features(MCA-Preprocess PRIVATE cxx_std_17)
 
 target_include_directories(
     MCA-Preprocess

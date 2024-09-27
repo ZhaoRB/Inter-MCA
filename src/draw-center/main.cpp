@@ -30,12 +30,12 @@ void drawCenters(const std::vector<cv::Point2d> &centers, double diameter, std::
 }
 
 int main(int argc, char **argv) {
-    std::string calibFilePath = "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/"
-                                "NewMiniGarden/new_minigarden.xml";
-    std::string inputPath = "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/raw/"
-                            "cropAndRotate_motherboard.bmp";
-    std::string outputPath = "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/center/"
-                             "cropAndRotate_motherboard.png";
+    std::string calibFilePath =
+        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/Motherboard/mca_calib.xml";
+    std::string inputPath =
+        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/raw/processed/Motherboard.png";
+    std::string outputPath =
+        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/center/Motherboard.png";
 
     MCA2::SequenceInfo seqInfo;
 

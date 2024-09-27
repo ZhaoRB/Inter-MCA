@@ -19,7 +19,7 @@ void postprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
         }
 
         // todo: width 和 height 存在哪里？哪个对象中？
-        cv::Mat restoredImage = cv::Mat::zeros(cv::Size(taskInfo.width, taskInfo.height), CV_8UC3);
+        cv::Mat restoredImage = cv::Mat::zeros(cv::Size(seqInfo.width, seqInfo.height), CV_8UC3);
         // std::cout << "Width (cols, outside): " << restoredImage.cols << std::endl;
         // std::cout << "Height (rows, outside): " << restoredImage.rows << std::endl;
 

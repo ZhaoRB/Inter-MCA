@@ -1,6 +1,8 @@
 <TSPCCalibData>
   <diameter unit="pix">70</diameter>
-  <rotation unit="rad">1.57079632679</rotation>
+  <direction>0</direction>
+  <width>4038</width>
+  <height>3064</height>
   <centers>
     <ltop>
       <x>37.5</x>

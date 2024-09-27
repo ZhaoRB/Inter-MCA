@@ -1,9 +1,8 @@
 <TSPCCalibData>
   <diameter unit="pix">70</diameter>
-  <!-- direction Indicates the MLA alignment direction.
-    0 indicates the vertical alignment.
-    1 indicates the horizontal alignment. -->
-  <direction>0</direction> 
+  <direction>0</direction>
+  <width>3976</width>
+  <height>2956</height>
   <centers>
     <ltop>
       <x>35.7</x>
