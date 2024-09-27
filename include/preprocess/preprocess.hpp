@@ -7,20 +7,30 @@
 #include <vector>
 
 namespace MCA2 {
+const int NeighborNum = 6; // each MI has 6 neighbors
+class Preprocessor {
+private:
+    int radius, halfSideLength, sideLength;
 
-void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo);
+    // additional data pass to postprocessor
+    std::array<cv::Point2i, NeighborNum> offsets;
+    std::vector<double> decayCoefficients;
 
-void cropAndRealign(cv::Mat &rawImage, cv::Mat &croppedImage, cv::Point2i &center, int idx,
-                    int colNum, int sideLength);
+    void cropAndRealign(cv::Mat &rawImage, cv::Mat &croppedImage, cv::Point2i &center, int idx,
+                        int colNum, int sideLength);
+
+    void calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo);
 
 
+public:
+    Preprocessor() {};
+    Preprocessor(double diameter) {
+        radius = static_cast<int>(diameter) / 2;
+        halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
+        sideLength = 2 * halfSideLength + 1;
+    };
 
-enum Direction { TOP, RTOP, RBOT, BOT, LBOT, LTOP };
-const int NEIGHBOR_NUM = 6;
+    void preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo);
+};
 
-cv::Point2i calOffsetVector(const cv::Point2i &ltop, int w, int h, Direction direction);
-
-std::array<cv::Point2i, NEIGHBOR_NUM>
-calculateOffsetVectors(const cv::Mat &image, const std::vector<cv::Point2d> &centers, int idx,
-                       int colNum, int rowNum, int diameter);
 } // namespace MCA2
