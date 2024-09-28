@@ -23,15 +23,16 @@
 namespace MCA2 {
 
 void Preprocessor::preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
-    // 1. 计算 offset vector（edge micro image 不计算）
+    // calculate offset vector candidates through first frame
     cv::Mat firstFrame = cv::imread(getPath(taskInfo.inputPath, 0));
     calOffsetVectors(firstFrame, seqInfo);
 
     // for (int i = taskInfo.startFrame; i <= taskInfo.endFrame; i++) {
     //     // read image
-    //     cv::Mat image = cv::imread(getPath(taskInfo.inputPath, i));
+    //     std::string inputRealPath = getPath(taskInfo.inputPath, i);
+    //     cv::Mat image = cv::imread(inputRealPath);
     //     if (image.empty()) {
-    //         std::cout << "[Warning] Image not found: " << taskInfo.inputPath << std::endl;
+    //         std::cout << "[Warning] Image not found: " << inputRealPath << std::endl;
     //         continue;
     //     }
 
@@ -44,7 +45,6 @@ void Preprocessor::preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
     //         cropAndRealign(image, croppedImage, center, idx, seqInfo.colNum, sideLength);
     //     }
 
-    //     // todo: 这个 filename 应该还得改一下
     //     cv::imwrite(getPath(taskInfo.outputPath, i), croppedImage);
     // }
 };
@@ -52,6 +52,7 @@ void Preprocessor::preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
 void Preprocessor::calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Point2i &curCenter,
                                              std::array<double, NeighborNum> &ssimScores,
                                              std::array<cv::Point2i, NeighborNum> &tmpOffsets) {
+
     std::array<cv::Rect, NeighborNum> roiRects = {
         cv::Rect(curCenter.x - halfSideLength, curCenter.y + 1, sideLength,
                  halfSideLength), // TOP
@@ -84,7 +85,8 @@ void Preprocessor::calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Poi
     findBestOffset(0, rangeY1[0], rangeY1[1], 0, -1, 1.0); // TOP
     findBestOffset(3, rangeY1[0], rangeY1[1], 0, 1, 1.0);  // BOT
 
-    int rangeY2[] = {radius, static_cast<int>(1.5 * radius)};
+    int rangeEnd = radius + std::round(static_cast<double>(halfSideLength) / sqrt(3));
+    int rangeY2[] = {radius, rangeEnd};
     findBestOffset(1, rangeY2[0], rangeY2[1], 1, -1, sqrt(3));  // RTOP
     findBestOffset(2, rangeY2[0], rangeY2[1], 1, 1, sqrt(3));   // RBOT
     findBestOffset(4, rangeY2[0], rangeY2[1], -1, 1, sqrt(3));  // LBOT
@@ -97,6 +99,8 @@ void Preprocessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo)
 
     std::array<cv::Point2i, NeighborNum> tmpOffsets;
     std::array<double, NeighborNum> ssimScores;
+
+    const int threshold = 10;
 
     for (int i = 1; i < seqInfo.colNum - 1; i++) {
         for (int j = 1; j < seqInfo.rowNum - 1; j++) {
@@ -119,17 +123,20 @@ void Preprocessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo)
     std::vector<std::string> pos = {"top", "rtop", "rbot", "bot", "lbot", "ltop"};
     for (int i = 0; i < NeighborNum; i++) {
         std::cout << pos[i] << ":" << std::endl;
-        int max = 0;
         for (const auto &pair : countMap[i]) {
             std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-            if (pair.second > max) {
-                max = pair.second;
+            if (pair.second > threshold) {
                 size_t commaPos = pair.first.find(',');
-                offsets[i].x = std::stoi(pair.first.substr(0, commaPos));
-                offsets[i].y = std::stoi(pair.first.substr(commaPos + 1));
+                offsetsCandidates[i].push_back(pair);
             }
         }
-        std::cout << offsets[i].x << ", " << offsets[i].y << std::endl;
+        std::sort(offsetsCandidates[i].begin(), offsetsCandidates[i].end(),
+                  [](const auto &a, const auto &b) { return a.second > b.second; });
+
+        // output
+        for (const auto &pair : offsetsCandidates[i]) {
+            std::cout << pair.first << ": " << pair.second << std::endl;
+        }
     }
 }
 

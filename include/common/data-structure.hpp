@@ -14,12 +14,14 @@ struct TaskInfo {
     std::string calibrationFilePath;
     std::string inputPath;
     std::string outputPath;
+    std::string supInfoPath;
     int startFrame, endFrame;
 
     TaskInfo() {};
-    TaskInfo(std::string &calibFile, std::string &input, std::string &output, int start, int end)
-        : calibrationFilePath(calibFile), inputPath(input), outputPath(output), startFrame(start),
-          endFrame(end) {}
+    TaskInfo(std::string &calibFile, std::string &input, std::string &output, std::string &supInfo,
+             int start, int end)
+        : calibrationFilePath(calibFile), inputPath(input), outputPath(output),
+          supInfoPath(supInfo), startFrame(start), endFrame(end) {}
 };
 
 struct SequenceInfo {

@@ -4,6 +4,7 @@
 #include <array>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
+#include <string>
 #include <vector>
 
 namespace MCA2 {
@@ -13,7 +14,7 @@ private:
     int radius, halfSideLength, sideLength;
 
     // additional data pass to postprocessor
-    std::array<cv::Point2i, NeighborNum> offsets;
+    std::array<std::vector<std::pair<std::string, int>>, NeighborNum> offsetsCandidates;
     std::vector<double> decayCoefficients;
 
     void cropAndRealign(cv::Mat &rawImage, cv::Mat &croppedImage, cv::Point2i &center, int idx,
@@ -24,6 +25,8 @@ private:
     void calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Point2i &curCenter,
                                    std::array<double, NeighborNum> &ssimScores,
                                    std::array<cv::Point2i, NeighborNum> &tmpOffsets);
+
+    void saveOffsetVectors(std::string &supInfoPath);
 
 public:
     Preprocessor() {};

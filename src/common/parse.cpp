@@ -40,7 +40,8 @@ int Parser::parseConfigFile(std::string &configFilePath, TaskInfo &taskInfo) {
     }
 
     taskInfo = TaskInfo(config["Calibration_xml"], config["RawImage_Path"], config["Output_Path"],
-                        std::stoi(config["start_frame"]), std::stoi(config["end_frame"]));
+                        config["supInfo_path"], std::stoi(config["start_frame"]),
+                        std::stoi(config["end_frame"]));
     configFile.close();
 
     return 0;
