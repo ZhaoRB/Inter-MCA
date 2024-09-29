@@ -6,7 +6,7 @@
 
 namespace MCA2 {
 
-//TODO: reuse with preprocessor
+// TODO: reuse with preprocessor
 void PostProcessor::restoreCroppedPatched(const cv::Mat &processedImage, cv::Mat &restoredImage,
                                           const SequenceInfo &seqInfo) {
 
@@ -15,9 +15,10 @@ void PostProcessor::restoreCroppedPatched(const cv::Mat &processedImage, cv::Mat
             cv::Point2i curCenter(std::round(seqInfo.centers[i * seqInfo.rowNum + j].x),
                                   std::round(seqInfo.centers[i * seqInfo.rowNum + j].y));
 
-            cv::Rect restoredROI(curCenter.x - halfSideLength, curCenter.y - halfSideLength, sideLength,
-                            sideLength);
-            cv::Mat restoredPatch = restoredImage(restoredImage);
+            cv::Rect restoredROI(curCenter.x - halfSideLength, curCenter.y - halfSideLength,
+                                 sideLength, sideLength);
+
+            cv::Mat restoredPatch = restoredImage(restoredROI);
 
             int srcX = (i - 1) * sideLength;
             int srcY = (j - 1) * sideLength;
