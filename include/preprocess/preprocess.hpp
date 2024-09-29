@@ -9,7 +9,7 @@
 
 namespace MCA2 {
 const int NeighborNum = 6; // each MI has 6 neighbors
-class Preprocessor {
+class PreProcessor {
 private:
     int radius, halfSideLength, sideLength;
 
@@ -30,8 +30,8 @@ private:
     cv::Mat cropAndRealignMainPart(const cv::Mat &rawImage, const SequenceInfo &seqInfo);
 
 public:
-    Preprocessor() {};
-    Preprocessor(double diameter) {
+    PreProcessor() {};
+    PreProcessor(double diameter) {
         radius = static_cast<int>(diameter) / 2;
         halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
         sideLength = 2 * halfSideLength + 1;

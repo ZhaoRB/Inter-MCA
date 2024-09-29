@@ -21,8 +21,8 @@ int main(int argc, char **argv) {
     parser.parseCalibXMLFile(taskInfo.calibrationFilePath, seqInfo);
 
     // preprocess
-    MCA2::Preprocessor preprocessor(seqInfo.diameter);
-    preprocessor.preprocess(seqInfo, taskInfo);
+    MCA2::PreProcessor PreProcessor(seqInfo.diameter);
+    PreProcessor.preprocess(seqInfo, taskInfo);
 
     return 0;
 }

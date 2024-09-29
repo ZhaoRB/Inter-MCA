@@ -10,13 +10,13 @@ namespace MCA2 {
 1. 裁切边缘像素 & 边缘MI
 2. 中间非边缘MI，按照以前的方法，裁剪，拼接
  */
-cv::Mat Preprocessor::cropAndRealign(const cv::Mat &rawImage, const SequenceInfo &seqInfo) {
+cv::Mat PreProcessor::cropAndRealign(const cv::Mat &rawImage, const SequenceInfo &seqInfo) {
     cv::Mat processedImage = cropAndRealignMainPart(rawImage, seqInfo);
 
     return processedImage;
 }
 
-cv::Mat Preprocessor::cropAndRealignMainPart(const cv::Mat &rawImage, const SequenceInfo &seqInfo) {
+cv::Mat PreProcessor::cropAndRealignMainPart(const cv::Mat &rawImage, const SequenceInfo &seqInfo) {
     cv::Mat processedImageMainPart(
         cv::Size(sideLength * (seqInfo.colNum - 2), sideLength * (seqInfo.rowNum - 2)), CV_8UC3);
 

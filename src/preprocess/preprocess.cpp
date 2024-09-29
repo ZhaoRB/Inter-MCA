@@ -9,7 +9,7 @@
 
 namespace MCA2 {
 
-void Preprocessor::preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
+void PreProcessor::preprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
     // calculate offset vector candidates through first frame
     cv::Mat firstFrame = cv::imread(getPath(taskInfo.inputPath, 0));
     calOffsetVectors(firstFrame, seqInfo);

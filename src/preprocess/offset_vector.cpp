@@ -13,7 +13,7 @@
 
 namespace MCA2 {
 
-void Preprocessor::calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Point2i &curCenter,
+void PreProcessor::calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Point2i &curCenter,
                                              std::array<double, NeighborNum> &ssimScores,
                                              std::array<cv::Point2i, NeighborNum> &tmpOffsets) {
 
@@ -57,7 +57,7 @@ void Preprocessor::calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Poi
     findBestOffset(5, rangeY2[0], rangeY2[1], -1, -1, sqrt(3)); // LTOP
 }
 
-void Preprocessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo) {
+void PreProcessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo) {
     // count
     std::array<std::unordered_map<std::string, int>, NeighborNum> countMap;
 
