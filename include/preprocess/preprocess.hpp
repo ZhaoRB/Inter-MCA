@@ -13,19 +13,21 @@ class Preprocessor {
 private:
     int radius, halfSideLength, sideLength;
 
-    // additional data pass to postprocessor
+    // offset vectors
     std::array<std::vector<std::pair<std::string, int>>, NeighborNum> offsetsCandidates;
-    std::vector<double> decayCoefficients;
 
     void calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo);
-
     void calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Point2i &curCenter,
                                    std::array<double, NeighborNum> &ssimScores,
                                    std::array<cv::Point2i, NeighborNum> &tmpOffsets);
-
     void saveOffsetVectors(std::string &supInfoPath);
 
+    //
+    std::vector<double> decayCoefficients;
+
+    // crop and realign
     cv::Mat cropAndRealign(const cv::Mat &rawImage, const SequenceInfo &seqInfo);
+    cv::Mat cropAndRealignMainPart(const cv::Mat &rawImage, const SequenceInfo &seqInfo);
 
 public:
     Preprocessor() {};
