@@ -6,7 +6,7 @@ Parse config file and calibration file
 #include <opencv2/core/types.hpp>
 #include <string>
 
-#include "data-structure.hpp"
+#include "data_structure.hpp"
 
 namespace MCA2 {
 

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "data-structure.hpp"
+#include "data_structure.hpp"
 #include "parse.hpp"
 
 void drawCenters(const std::vector<cv::Point2d> &centers, double diameter, std::string &imagePath,

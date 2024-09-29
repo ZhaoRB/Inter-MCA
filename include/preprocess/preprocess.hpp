@@ -1,6 +1,6 @@
 #pragma once
 
-#include "data-structure.hpp"
+#include "data_structure.hpp"
 #include <array>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
@@ -17,9 +17,6 @@ private:
     std::array<std::vector<std::pair<std::string, int>>, NeighborNum> offsetsCandidates;
     std::vector<double> decayCoefficients;
 
-    void cropAndRealign(cv::Mat &rawImage, cv::Mat &croppedImage, cv::Point2i &center, int idx,
-                        int colNum, int sideLength);
-
     void calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo);
 
     void calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Point2i &curCenter,
@@ -27,6 +24,8 @@ private:
                                    std::array<cv::Point2i, NeighborNum> &tmpOffsets);
 
     void saveOffsetVectors(std::string &supInfoPath);
+
+    cv::Mat cropAndRealign(const cv::Mat &rawImage, const SequenceInfo &seqInfo);
 
 public:
     Preprocessor() {};

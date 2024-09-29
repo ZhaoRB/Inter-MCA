@@ -8,6 +8,8 @@ add_executable(
     MCA-Preprocess
     src/preprocess/main.cpp
     src/preprocess/preprocess.cpp
+    src/preprocess/offset_vector.cpp
+    src/preprocess/crop_realign.cpp
     src/common/parse.cpp
     src/common/utils.cpp
 )
@@ -32,14 +34,14 @@ target_link_libraries(
 
 # draw centers
 add_executable(
-    Draw-Centers
-    src/draw-center/main.cpp
+    draw_centers
+    src/draw_center/main.cpp
     src/common/parse.cpp
     src/common/utils.cpp
 )
 
 target_include_directories(
-    Draw-Centers
+    draw_centers
     PRIVATE
     include/common
     PRIVATE ${OpenCV_INCLUDE_DIRS}
@@ -47,7 +49,7 @@ target_include_directories(
 )
 
 target_link_libraries(
-    Draw-Centers
+    draw_centers
     PRIVATE ${OpenCV_LIBS}
     PRIVATE
     "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"

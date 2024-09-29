@@ -29,8 +29,8 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "draw-center",
-            "program": "${workspaceFolder}/build/Draw-Centers",
+            "name": "draw_center",
+            "program": "${workspaceFolder}/build/draw_centers",
             "args": [],
             "cwd": "${workspaceFolder}"
         },

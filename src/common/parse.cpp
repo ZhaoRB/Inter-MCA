@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "data-structure.hpp"
+#include "data_structure.hpp"
 #include "parse.hpp"
 #include "utils.hpp"
 
