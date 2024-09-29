@@ -14,16 +14,13 @@ void PostProcessor::postprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
             continue;
         }
 
-        // todo: width 和 height 存在哪里？哪个对象中？
         cv::Mat restoredImage = cv::Mat::zeros(cv::Size(seqInfo.width, seqInfo.height), CV_8UC3);
-        // std::cout << "Width (cols, outside): " << restoredImage.cols << std::endl;
-        // std::cout << "Height (rows, outside): " << restoredImage.rows << std::endl;
 
         // restore: step 1
         restoreCroppedPatched(preprocessedImage, restoredImage, seqInfo);
         // cv::imwrite(taskInfo.outputPath, restoredImage);
-        restoreFourCorners(preprocessedImage, restoredImage, seqInfo);
-        cv::imwrite(taskInfo.outputPath, restoredImage);
+        // restoreFourCorners(preprocessedImage, restoredImage, seqInfo);
+        cv::imwrite(getPath(taskInfo.outputPath, i), restoredImage);
     }
 }
 

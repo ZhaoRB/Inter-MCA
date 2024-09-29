@@ -1,47 +1,37 @@
 #include "postprocess.hpp"
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
-#include <opencv2/core/hal/interface.h>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/core/types.hpp>
-#include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
 namespace MCA2 {
-// todo: 与 preprocess 逻辑类似，如何复用？
-void restoreCroppedPatched(const cv::Mat &srcImage, cv::Mat &dstImage,
-                           const SequenceInfo &seqInfo) {
-    int radius = static_cast<int>(seqInfo.diameter) / 2;
-    int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
-    int sideLength = 2 * halfSideLength + 1;
 
-    // std::cout << "Width (cols): " << dstImage.cols << std::endl;
-    // std::cout << "Height (rows): " << dstImage.rows << std::endl;
+//TODO: reuse with preprocessor
+void PostProcessor::restoreCroppedPatched(const cv::Mat &processedImage, cv::Mat &restoredImage,
+                                          const SequenceInfo &seqInfo) {
 
-    for (int i = 0; i < seqInfo.centers.size(); i++) {
-        cv::Point2i center(cvRound(seqInfo.centers[i].x), cvRound(seqInfo.centers[i].y));
-        cv::Rect dstROI(center.x - halfSideLength, center.y - halfSideLength, sideLength,
-                        sideLength);
+    for (int i = 1; i < seqInfo.colNum - 1; i++) {
+        for (int j = 1; j < seqInfo.rowNum - 1; j++) {
+            cv::Point2i curCenter(std::round(seqInfo.centers[i * seqInfo.rowNum + j].x),
+                                  std::round(seqInfo.centers[i * seqInfo.rowNum + j].y));
 
-        int srcX = (i % seqInfo.colNum) * sideLength;
-        int srcY = (i / seqInfo.colNum) * sideLength;
-        cv::Rect srcROI(srcX, srcY, sideLength, sideLength);
-        cv::Mat currentPatch = srcImage(srcROI);
+            cv::Rect restoredROI(curCenter.x - halfSideLength, curCenter.y - halfSideLength, sideLength,
+                            sideLength);
+            cv::Mat restoredPatch = restoredImage(restoredImage);
 
-        // cv::Point ltop = dstROI.tl();
-        // std::cout << "Top left of dstROI: " << ltop.x << ", " << ltop.y << std::endl;
-        // cv::Point rbot = dstROI.br();
-        // std::cout << "Bottom right of dstROI: " << rbot.x << ", " << rbot.y << std::endl;
+            int srcX = (i - 1) * sideLength;
+            int srcY = (j - 1) * sideLength;
+            cv::Rect srcROI(srcX, srcY, sideLength, sideLength);
+            cv::Mat srcPatch = processedImage(srcROI);
 
-        currentPatch.copyTo(dstImage(dstROI));
+            srcPatch.copyTo(restoredPatch);
+        }
     }
 }
 
 // corner predict
-std::array<cv::Mat, 4> PostProcessor::getFourCornerMasks(const cv::Size &imageSize, cv::Point2i &center,
-                                          int radius) {
-    int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
-    int sideLength = 2 * halfSideLength + 1, diameter = radius * 2 + 1;
+std::array<cv::Mat, 4> PostProcessor::getFourCornerMasks(const cv::Size &imageSize,
+                                                         cv::Point2i &center) {
 
     std::array<cv::Mat, 4> fourCornersMasks;
     for (auto &mask : fourCornersMasks) {
@@ -50,7 +40,7 @@ std::array<cv::Mat, 4> PostProcessor::getFourCornerMasks(const cv::Size &imageSi
     }
 
     std::array<cv::Rect, 4> rectMasks;
-    int longEdge = diameter, shortEdge = halfSideLength + radius + 1;
+    int longEdge = radius * 2 + 1, shortEdge = halfSideLength + radius + 1;
     rectMasks[0] = cv::Rect(center.x - radius, center.y - halfSideLength, longEdge, shortEdge);
     rectMasks[1] = cv::Rect(center.x - radius, center.y - radius, shortEdge, longEdge);
     rectMasks[2] = cv::Rect(center.x - radius, center.y - radius, longEdge, shortEdge);
@@ -62,7 +52,8 @@ std::array<cv::Mat, 4> PostProcessor::getFourCornerMasks(const cv::Size &imageSi
     return fourCornersMasks;
 }
 
-void PostProcessor::restoreFourCorners(const cv::Mat &srcImage, cv::Mat &dstImage, const SequenceInfo &seqInfo) {
+void PostProcessor::restoreFourCorners(const cv::Mat &srcImage, cv::Mat &dstImage,
+                                       const SequenceInfo &seqInfo) {
     int radius = static_cast<int>(seqInfo.diameter) / 2;
     int halfSideLength = std::floor(static_cast<double>(radius) / sqrt(2));
     int sideLength = 2 * halfSideLength + 1;
@@ -83,8 +74,7 @@ void PostProcessor::restoreFourCorners(const cv::Mat &srcImage, cv::Mat &dstImag
         }
 
         cv::Point2i center(cvRound(seqInfo.centers[i].x), cvRound(seqInfo.centers[i].y));
-        std::array<cv::Mat, 4> fourCornersMasks =
-            getFourCornerMasks(dstImage.size(), center, radius);
+        std::array<cv::Mat, 4> fourCornersMasks = getFourCornerMasks(dstImage.size(), center);
 
         for (int j = 0; j < 4; j++) {
             copyTo(dstImage, fourCornersMasks[j], offsets[j]);

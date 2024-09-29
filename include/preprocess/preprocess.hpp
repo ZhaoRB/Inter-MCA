@@ -22,9 +22,6 @@ private:
                                    std::array<cv::Point2i, NeighborNum> &tmpOffsets);
     void saveOffsetVectors(std::string &supInfoPath);
 
-    //
-    std::vector<double> decayCoefficients;
-
     // crop and realign
     cv::Mat cropAndRealign(const cv::Mat &rawImage, const SequenceInfo &seqInfo);
     cv::Mat cropAndRealignMainPart(const cv::Mat &rawImage, const SequenceInfo &seqInfo);
