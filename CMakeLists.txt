@@ -60,7 +60,8 @@ add_executable(
     MCA-Postprocess
     src/postprocess/main.cpp
     src/postprocess/postprocess.cpp
-    src/postprocess/restore_main.cpp
+    src/postprocess/restore_patches.cpp
+    src/postprocess/restore_corners.cpp
     src/common/utils.cpp
     src/common/parse.cpp
 )

@@ -5,31 +5,6 @@
 #include <opencv2/imgproc.hpp>
 
 namespace MCA2 {
-
-// TODO: reuse with preprocessor
-void PostProcessor::restoreCroppedPatched(const cv::Mat &processedImage, cv::Mat &restoredImage,
-                                          const SequenceInfo &seqInfo) {
-
-    for (int i = 1; i < seqInfo.colNum - 1; i++) {
-        for (int j = 1; j < seqInfo.rowNum - 1; j++) {
-            cv::Point2i curCenter(std::round(seqInfo.centers[i * seqInfo.rowNum + j].x),
-                                  std::round(seqInfo.centers[i * seqInfo.rowNum + j].y));
-
-            cv::Rect restoredROI(curCenter.x - halfSideLength, curCenter.y - halfSideLength,
-                                 sideLength, sideLength);
-
-            cv::Mat restoredPatch = restoredImage(restoredROI);
-
-            int srcX = (i - 1) * sideLength;
-            int srcY = (j - 1) * sideLength;
-            cv::Rect srcROI(srcX, srcY, sideLength, sideLength);
-            cv::Mat srcPatch = processedImage(srcROI);
-
-            srcPatch.copyTo(restoredPatch);
-        }
-    }
-}
-
 // corner predict
 std::array<cv::Mat, 4> PostProcessor::getFourCornerMasks(const cv::Size &imageSize,
                                                          cv::Point2i &center) {
@@ -101,5 +76,4 @@ void PostProcessor::copyTo(cv::Mat &image, cv::Mat &dstMask, cv::Point2i &offset
 
     srcROI.copyTo(image(dstBoundingBox), dstMask(dstBoundingBox));
 }
-
 } // namespace MCA2

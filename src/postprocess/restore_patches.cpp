@@ -1,26 +1,12 @@
-#include "data_structure.hpp"
-#include "preprocess.hpp"
-
-#include <opencv2/core.hpp>
-#include <opencv2/core/types.hpp>
+#include "postprocess.hpp"
+#include <cmath>
+#include <cstdlib>
 
 namespace MCA2 {
 
-cv::Size PreProcessor::calProcessedSize(const SequenceInfo &seqInfo) {
-    int width = sideLength * seqInfo.colNum;
-    int height = sideLength * seqInfo.rowNum;
-
-    int error = -5;
-    if ((seqInfo.height - seqInfo.lbot.y - seqInfo.diameter) > error) {
-        height = height + halfSideLength;
-    }
-
-    return cv::Size(width, height);
-}
-
-cv::Mat PreProcessor::cropAndRealign(const cv::Mat &rawImage, const SequenceInfo &seqInfo) {
-    cv::Mat processedImage(calProcessedSize(seqInfo), CV_8UC3);
-
+// TODO: reuse with preprocessor
+void PostProcessor::restoreCroppedPatched(const cv::Mat &processedImage, cv::Mat &restoredImage,
+                                          const SequenceInfo &seqInfo) {
     for (int i = 0; i < seqInfo.colNum; i++) {
         for (int j = 0; j < seqInfo.rowNum; j++) {
             if (j == seqInfo.rowNum - 1 && seqInfo.colNum % 2 == 1 && i % 2 == 1)
@@ -34,8 +20,8 @@ cv::Mat PreProcessor::cropAndRealign(const cv::Mat &rawImage, const SequenceInfo
             int tgtX = i * sideLength;
             int tgtY = i % 2 == 0 ? j * sideLength : j * sideLength + halfSideLength;
 
-            rawImage(cv::Rect(srcX, srcY, sideLength, sideLength))
-                .copyTo(processedImage(cv::Rect(tgtX, tgtY, sideLength, sideLength)));
+            processedImage(cv::Rect(tgtX, tgtY, sideLength, sideLength))
+                .copyTo(restoredImage(cv::Rect(srcX, srcY, sideLength, sideLength)));
         }
 
         if (i % 2 == 1) {
@@ -48,8 +34,8 @@ cv::Mat PreProcessor::cropAndRealign(const cv::Mat &rawImage, const SequenceInfo
             int tgtX = i * sideLength;
             int tgtY = 0;
 
-            rawImage(cv::Rect(srcX, srcY, sideLength, halfSideLength))
-                .copyTo(processedImage(cv::Rect(tgtX, tgtY, sideLength, halfSideLength)));
+            processedImage(cv::Rect(tgtX, tgtY, sideLength, halfSideLength))
+                .copyTo(restoredImage(cv::Rect(srcX, srcY, sideLength, halfSideLength)));
         }
         if (i % 2 == 1 && seqInfo.colNum % 2 == 1 || i % 2 == 0 && seqInfo.colNum % 2 == 0) {
             int biasY = seqInfo.colNum % 2 == 1 ? 0 : seqInfo.diameter;
@@ -62,12 +48,10 @@ cv::Mat PreProcessor::cropAndRealign(const cv::Mat &rawImage, const SequenceInfo
             int tgtX = i * sideLength;
             int tgtY = seqInfo.colNum % 2 == 0 ? seqInfo.rowNum * sideLength
                                                : (seqInfo.rowNum - 1) * sideLength + halfSideLength;
-            rawImage(cv::Rect(srcX, srcY, sideLength, halfSideLength))
-                .copyTo(processedImage(cv::Rect(tgtX, tgtY, sideLength, halfSideLength)));
+            processedImage(cv::Rect(tgtX, tgtY, sideLength, halfSideLength))
+                .copyTo(restoredImage(cv::Rect(srcX, srcY, sideLength, halfSideLength)));
         }
     }
-
-    return processedImage;
 }
 
 } // namespace MCA2
