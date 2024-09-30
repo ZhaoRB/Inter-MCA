@@ -86,6 +86,8 @@ int Parser::parseCalibXMLFile(std::string &calibXMLFilePath, SequenceInfo &seqIn
                                centerNode.child("lbot").child("y").text().as_double());
     seqInfo.rbot = cv::Point2d(centerNode.child("rbot").child("x").text().as_double(),
                                centerNode.child("rbot").child("y").text().as_double());
+    // seqInfo.rtop = cv::Point2d(seqInfo.rbot.x, seqInfo.ltop.y);
+    // seqInfo.lbot = cv::Point2d(seqInfo.ltop.x, seqInfo.rbot.y);
 
     setRowAndColNums(seqInfo);
 

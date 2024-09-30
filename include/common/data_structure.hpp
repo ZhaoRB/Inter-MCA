@@ -25,11 +25,12 @@ struct TaskInfo {
 };
 
 struct SequenceInfo {
-    int width, height, rowNum, colNum;
+    int width, height;
+    int rowNum, colNum;
     int direction; // 0 is vertical, 1 is horizontal
     double diameter;
-    cv::Point2d ltop, rtop, lbot, rbot;
 
+    cv::Point2d ltop, rtop, lbot, rbot;
     std::vector<cv::Point2d> centers;
 
     // Set default value

@@ -61,7 +61,6 @@ add_executable(
     src/postprocess/main.cpp
     src/postprocess/postprocess.cpp
     src/postprocess/restore_main.cpp
-    src/postprocess/restore_edge.cpp
     src/common/utils.cpp
     src/common/parse.cpp
 )

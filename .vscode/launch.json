@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/build/MCA-Preprocess",
             "args": [
                 // "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test-pre.cfg",
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/NewMiniGarden/pre.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/TSPC/NewMiniGarden/pre.cfg",
             ],
             "cwd": "${workspaceFolder}"
         },
@@ -22,7 +22,7 @@
             "program": "${workspaceFolder}/build/MCA-Postprocess",
             "args": [
                 // "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/new-seq/test-post.cfg",
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/NewMiniGarden/post.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/TSPC//NewMiniGarden/post.cfg",
             ],
             "cwd": "${workspaceFolder}"
         },

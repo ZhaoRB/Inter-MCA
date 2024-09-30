@@ -31,11 +31,11 @@ void drawCenters(const std::vector<cv::Point2d> &centers, double diameter, std::
 
 int main(int argc, char **argv) {
     std::string calibFilePath =
-        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/TSPC/NewMiniGarden/mca_calib.xml";
+        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/TSPC/Boys/mca_calib.xml";
     std::string inputPath =
-        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/raw/processed/Motherboard.png";
+        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/raw/processed/Boys.png";
     std::string outputPath =
-        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/center/Motherboard.png";
+        "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/data/center/Boys.png";
 
     MCA2::SequenceInfo seqInfo;
 

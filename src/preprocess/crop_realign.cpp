@@ -6,37 +6,64 @@
 
 namespace MCA2 {
 
-/**
-1. 裁切边缘像素 & 边缘MI
-2. 中间非边缘MI，按照以前的方法，裁剪，拼接
- */
-cv::Mat PreProcessor::cropAndRealign(const cv::Mat &rawImage, const SequenceInfo &seqInfo) {
-    cv::Mat processedImage = cropAndRealignMainPart(rawImage, seqInfo);
+cv::Size PreProcessor::calProcessedSize(const SequenceInfo &seqInfo) {
+    int width = sideLength * seqInfo.colNum;
+    int height = sideLength * seqInfo.rowNum;
 
-    return processedImage;
+    int error = -5;
+    if ((seqInfo.height - seqInfo.lbot.y - seqInfo.diameter) > error) {
+        height = height + halfSideLength;
+    }
+
+    return cv::Size(width, height);
 }
 
-cv::Mat PreProcessor::cropAndRealignMainPart(const cv::Mat &rawImage, const SequenceInfo &seqInfo) {
-    cv::Mat processedImageMainPart(
-        cv::Size(sideLength * (seqInfo.colNum - 2), sideLength * (seqInfo.rowNum - 2)), CV_8UC3);
+cv::Mat PreProcessor::cropAndRealign(const cv::Mat &rawImage, const SequenceInfo &seqInfo) {
+    cv::Mat processedImage(calProcessedSize(seqInfo), CV_8UC3);
 
-    for (int i = 1; i < seqInfo.colNum - 1; i++) {
-        for (int j = 1; j < seqInfo.rowNum - 1; j++) {
+    // todo: 有点硬编码，待优化
+    for (int i = 0; i < seqInfo.colNum; i++) {
+        for (int j = 0; j < seqInfo.rowNum; j++) {
+            if (j == seqInfo.rowNum - 1 && seqInfo.colNum % 2 == 1 && i % 2 == 1)
+                continue;
+
             cv::Point2i curCenter(std::round(seqInfo.centers[i * seqInfo.rowNum + j].x),
                                   std::round(seqInfo.centers[i * seqInfo.rowNum + j].y));
+            int srcX = curCenter.x - halfSideLength;
+            int srcY = curCenter.y - halfSideLength;
+            int tgtX = i * sideLength;
+            int tgtY = i % 2 == 0 ? j * sideLength : j * sideLength + halfSideLength;
 
-            cv::Rect srcROI(curCenter.x - halfSideLength, curCenter.y - halfSideLength, sideLength,
-                            sideLength);
-            cv::Mat croppedMicroImage = rawImage(srcROI);
-
-            int targetX = (i - 1) * sideLength;
-            int targetY = (j - 1) * sideLength;
-            cv::Rect targetROI(targetX, targetY, sideLength, sideLength);
-            croppedMicroImage.copyTo(processedImageMainPart(targetROI));
+            rawImage(cv::Rect(srcX, srcY, sideLength, sideLength))
+                .copyTo(processedImage(cv::Rect(tgtX, tgtY, sideLength, sideLength)));
+        }
+        // 如果是奇数列，第一行之前有半个MI
+        if (i % 2 == 1) {
+            cv::Point2i curCenter(
+                std::round(seqInfo.centers[i * seqInfo.rowNum].x),
+                std::round(seqInfo.centers[i * seqInfo.rowNum].y - seqInfo.diameter));
+            int srcX = curCenter.x - halfSideLength;
+            int srcY = curCenter.y;
+            int tgtX = i * sideLength, tgtY = 0;
+            rawImage(cv::Rect(srcX, srcY, sideLength, halfSideLength))
+                .copyTo(processedImage(cv::Rect(tgtX, tgtY, sideLength, halfSideLength)));
+        }
+        if (i % 2 == 1 && seqInfo.colNum % 2 == 1 || i % 2 == 0 && seqInfo.colNum % 2 == 0) {
+            cv::Point2i curCenter(
+                std::round(seqInfo.centers[i * seqInfo.rowNum + seqInfo.rowNum - 1].x),
+                std::round(seqInfo.centers[i * seqInfo.rowNum + seqInfo.rowNum - 1].y +
+                           seqInfo.diameter));
+            int srcX = curCenter.x - halfSideLength;
+            int srcY = curCenter.y - halfSideLength;
+            int tgtX = i * sideLength;
+            int tgtY = seqInfo.colNum % 2 == 0 ? seqInfo.rowNum * sideLength
+                                               : (seqInfo.rowNum - 1) * sideLength + halfSideLength;
+            rawImage(cv::Rect(srcX, srcY, sideLength, halfSideLength))
+                .copyTo(processedImage(cv::Rect(tgtX, tgtY, sideLength, halfSideLength)));
         }
     }
 
-    return processedImageMainPart;
+    return processedImage;
 }
 
 } // namespace MCA2

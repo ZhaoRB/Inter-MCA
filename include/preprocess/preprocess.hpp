@@ -5,6 +5,7 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace MCA2 {
@@ -24,7 +25,7 @@ private:
 
     // crop and realign
     cv::Mat cropAndRealign(const cv::Mat &rawImage, const SequenceInfo &seqInfo);
-    cv::Mat cropAndRealignMainPart(const cv::Mat &rawImage, const SequenceInfo &seqInfo);
+    cv::Size calProcessedSize(const SequenceInfo & seqInfo);
 
 public:
     PreProcessor() {};
