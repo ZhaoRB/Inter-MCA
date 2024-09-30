@@ -4,6 +4,7 @@
 
 #include <array>
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <ostream>
 #include <sstream>
@@ -12,6 +13,53 @@
 #include <vector>
 
 namespace MCA2 {
+void PreProcessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo) {
+    // count
+    std::array<std::unordered_map<std::string, int>, NeighborNum> countMap;
+
+    std::array<cv::Point2i, NeighborNum> tmpOffsets;
+    std::array<double, NeighborNum> ssimScores;
+
+    const int threshold = 10;
+
+    for (int i = 1; i < seqInfo.colNum - 1; i++) {
+        for (int j = 1; j < seqInfo.rowNum - 2; j++) {
+            std::fill(ssimScores.begin(), ssimScores.end(), 0);
+ 
+            cv::Point2i curCenter(std::round(seqInfo.centers[i * seqInfo.rowNum + j].x),
+                                  std::round(seqInfo.centers[i * seqInfo.rowNum + j].y));
+
+            // std::cout << "MI: " << i << " " << j << " " << std::endl;
+            calOffsetVectorsFromOneMI(image, curCenter, ssimScores, tmpOffsets);
+
+            for (int i = 0; i < NeighborNum; i++) {
+                std::ostringstream oss;
+                oss << tmpOffsets[i].x << "," << tmpOffsets[i].y;
+                std::string key = oss.str();
+                countMap[i][key] += 1;
+            }
+        }
+    }
+
+    std::vector<std::string> pos = {"top", "rtop", "rbot", "bot", "lbot", "ltop"};
+    for (int i = 0; i < NeighborNum; i++) {
+        std::cout << pos[i] << ":" << std::endl;
+        for (const auto &pair : countMap[i]) {
+            std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+            if (pair.second > threshold) {
+                size_t commaPos = pair.first.find(',');
+                offsetsCandidates[i].push_back(pair);
+            }
+        }
+        std::sort(offsetsCandidates[i].begin(), offsetsCandidates[i].end(),
+                  [](const auto &a, const auto &b) { return a.second > b.second; });
+
+        // output
+        for (const auto &pair : offsetsCandidates[i]) {
+            std::cout << pair.first << ": " << pair.second << std::endl;
+        }
+    }
+}
 
 void PreProcessor::calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Point2i &curCenter,
                                              std::array<double, NeighborNum> &ssimScores,
@@ -57,50 +105,20 @@ void PreProcessor::calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Poi
     findBestOffset(5, rangeY2[0], rangeY2[1], -1, -1, sqrt(3)); // LTOP
 }
 
-void PreProcessor::calOffsetVectors(const cv::Mat &image, SequenceInfo &seqInfo) {
-    // count
-    std::array<std::unordered_map<std::string, int>, NeighborNum> countMap;
+void PreProcessor::saveOffsetVectors(const std::string &supInfoPath) {
+    std::ofstream supInfoStream(supInfoPath, std::ios::out);
 
-    std::array<cv::Point2i, NeighborNum> tmpOffsets;
-    std::array<double, NeighborNum> ssimScores;
-
-    const int threshold = 10;
-
-    for (int i = 1; i < seqInfo.colNum - 1; i++) {
-        for (int j = 1; j < seqInfo.rowNum - 1; j++) {
-            std::fill(ssimScores.begin(), ssimScores.end(), 0);
-
-            cv::Point2i curCenter(std::round(seqInfo.centers[i * seqInfo.rowNum + j].x),
-                                  std::round(seqInfo.centers[i * seqInfo.rowNum + j].y));
-
-            calOffsetVectorsFromOneMI(image, curCenter, ssimScores, tmpOffsets);
-
-            for (int i = 0; i < NeighborNum; i++) {
-                std::ostringstream oss;
-                oss << tmpOffsets[i].x << "," << tmpOffsets[i].y;
-                std::string key = oss.str();
-                countMap[i][key] += 1;
-            }
-        }
+    if (!supInfoStream) {
+        throw std::runtime_error("Unable to open or create file: " + supInfoPath);
     }
 
-    std::vector<std::string> pos = {"top", "rtop", "rbot", "bot", "lbot", "ltop"};
     for (int i = 0; i < NeighborNum; i++) {
-        std::cout << pos[i] << ":" << std::endl;
-        for (const auto &pair : countMap[i]) {
-            std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-            if (pair.second > threshold) {
-                size_t commaPos = pair.first.find(',');
-                offsetsCandidates[i].push_back(pair);
-            }
-        }
-        std::sort(offsetsCandidates[i].begin(), offsetsCandidates[i].end(),
-                  [](const auto &a, const auto &b) { return a.second > b.second; });
-
-        // output
         for (const auto &pair : offsetsCandidates[i]) {
-            std::cout << pair.first << ": " << pair.second << std::endl;
+            supInfoStream << pair.first << ";";
         }
+        supInfoStream << std::endl;
     }
+
+    supInfoStream.close();
 }
 } // namespace MCA2

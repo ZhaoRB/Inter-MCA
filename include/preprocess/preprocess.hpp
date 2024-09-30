@@ -21,7 +21,7 @@ private:
     void calOffsetVectorsFromOneMI(const cv::Mat &image, const cv::Point2i &curCenter,
                                    std::array<double, NeighborNum> &ssimScores,
                                    std::array<cv::Point2i, NeighborNum> &tmpOffsets);
-    void saveOffsetVectors(std::string &supInfoPath);
+    void saveOffsetVectors(const std::string &supInfoPath);
 
     // crop and realign
     cv::Mat cropAndRealign(const cv::Mat &rawImage, const SequenceInfo &seqInfo);
