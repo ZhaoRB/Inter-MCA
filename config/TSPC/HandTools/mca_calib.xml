@@ -5,20 +5,20 @@
   <height>3064</height>
   <centers>
     <ltop>
-      <x>36.5</x>
-      <y>35.0</y>
+      <x>36</x>
+      <y>35</y>
     </ltop>
     <rtop>
-      <x>3940.8</x>
-      <y>35.0</y>
+      <x>3940</x>
+      <y>35</y>
     </rtop>
     <lbot>
-      <x>35.5</x>
-      <y>2994.8</y>
+      <x>36</x>
+      <y>2991</y>
     </lbot>
     <rbot>
-      <x>3940.2</x>
-      <y>2990.5</y>
+      <x>3940</x>
+      <y>2991</y>
     </rbot>
   </centers>
 </TSPCCalibData>
