@@ -37,7 +37,7 @@ cv::Mat PreProcessor::cropAndRealign(const cv::Mat &rawImage, const SequenceInfo
             rawImage(cv::Rect(srcX, srcY, sideLength, sideLength))
                 .copyTo(processedImage(cv::Rect(tgtX, tgtY, sideLength, sideLength)));
         }
-        // 如果是奇数列，第一行之前有半个MI
+
         if (i % 2 == 1) {
             cv::Point2i curCenter(
                 std::round(seqInfo.centers[i * seqInfo.rowNum].x),
@@ -49,10 +49,10 @@ cv::Mat PreProcessor::cropAndRealign(const cv::Mat &rawImage, const SequenceInfo
                 .copyTo(processedImage(cv::Rect(tgtX, tgtY, sideLength, halfSideLength)));
         }
         if (i % 2 == 1 && seqInfo.colNum % 2 == 1 || i % 2 == 0 && seqInfo.colNum % 2 == 0) {
+            int biasY = seqInfo.colNum % 2 == 1 ? 0 : seqInfo.diameter;
             cv::Point2i curCenter(
                 std::round(seqInfo.centers[i * seqInfo.rowNum + seqInfo.rowNum - 1].x),
-                std::round(seqInfo.centers[i * seqInfo.rowNum + seqInfo.rowNum - 1].y +
-                           seqInfo.diameter));
+                std::round(seqInfo.centers[i * seqInfo.rowNum + seqInfo.rowNum - 1].y) + biasY);
             int srcX = curCenter.x - halfSideLength;
             int srcY = curCenter.y - halfSideLength;
             int tgtX = i * sideLength;
