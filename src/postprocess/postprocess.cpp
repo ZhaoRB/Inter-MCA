@@ -16,10 +16,13 @@ void PostProcessor::postprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
 
         cv::Mat restoredImage = cv::Mat::zeros(cv::Size(seqInfo.width, seqInfo.height), CV_8UC3);
 
-        // restore: step 1
+        // restore patches
         restoreCroppedPatched(preprocessedImage, restoredImage, seqInfo);
-        // cv::imwrite(taskInfo.outputPath, restoredImage);
-        // restoreFourCorners(preprocessedImage, restoredImage, seqInfo);
+
+        // restore four corners
+        parseSupInfo(taskInfo.supInfoPath);
+        restoreFourCorners(restoredImage, seqInfo);
+
         cv::imwrite(getPath(taskInfo.outputPath, i), restoredImage);
     }
 }

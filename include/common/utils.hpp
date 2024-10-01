@@ -11,4 +11,10 @@ bool hasFormatSpecifier(const std::string &str);
 
 std::string getPath(const std::string &pathPattern, int idx);
 
+cv::Point stringToPoint(const std::string& str);
+
+std::string pointToString(const cv::Point& point);
+
+double calculateDistance(const cv::Point &point1, const cv::Point &point2);
+
 } // namespace MCA2

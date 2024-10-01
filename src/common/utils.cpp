@@ -11,6 +11,22 @@ std::string getPath(const std::string &pathPattern, int idx) {
     return std::string(filePath);
 }
 
+std::string pointToString(const cv::Point &point) {
+    return std::to_string(point.x) + "," + std::to_string(point.y);
+}
+
+cv::Point stringToPoint(const std::string &str) {
+    size_t commaPos = str.find(",");
+    int x = std::stoi(str.substr(0, commaPos));
+    int y = std::stoi(str.substr(commaPos + 1));
+
+    return cv::Point(x, y);
+}
+
+double calculateDistance(const cv::Point &point1, const cv::Point &point2) {
+    return std::sqrt(std::pow(point2.x - point1.x, 2) + std::pow(point2.y - point1.y, 2));
+}
+
 double calculateSSIM(const cv::Mat &img1, const cv::Mat &img2) {
     cv::Mat img1_gray, img2_gray;
     cv::cvtColor(img1, img1_gray, cv::COLOR_BGR2GRAY);
