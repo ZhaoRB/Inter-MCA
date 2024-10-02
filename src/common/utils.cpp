@@ -86,14 +86,15 @@ bool hasFormatSpecifier(const std::string &str) {
     return false;
 }
 
-cv::Mat expandImage(const cv::Mat &srcImage, int addRow, int addCol) {
-    cv::Mat res(cv::Size(srcImage.cols + addCol, srcImage.rows + addRow), srcImage.type(),
-                cv::Scalar(0, 0, 0));
-    srcImage.copyTo(res(cv::Rect(0, 0, srcImage.cols, srcImage.rows)));
+cv::Mat expandImage(const cv::Mat &srcImage, int top, int left, int bottom, int right) {
+    cv::Mat res(cv::Size(srcImage.cols + left + right, srcImage.rows + top + bottom),
+                srcImage.type(), cv::Scalar(0, 0, 0));
+    srcImage.copyTo(res(cv::Rect(left, top, srcImage.cols, srcImage.rows)));
     return res;
 }
 
-cv::Mat cropImage(const cv::Mat &srcImage, int uselessRow, int uselessCol) {
-    return srcImage(cv::Rect(0, 0, srcImage.cols - uselessCol, srcImage.rows - uselessRow));
+cv::Mat cropImage(const cv::Mat &srcImage, int top, int left, int bottom, int right) {
+    return srcImage(
+        cv::Rect(left, top, srcImage.cols - left - right, srcImage.rows - top - bottom));
 }
 } // namespace MCA2

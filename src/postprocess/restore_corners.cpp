@@ -68,55 +68,73 @@ std::array<cv::Point2i, NeighborNum> PostProcessor::findBestOffset(const cv::Mat
     return bestOffsets;
 }
 
-void PostProcessor::restoreFourCorners(cv::Mat &image, const SequenceInfo &seqInfo) {
+void PostProcessor::restoreFourCorners(cv::Mat &dstImage, const SequenceInfo &seqInfo) {
     std::cout << "Restoring four corners..." << std::endl;
 
     // restore main part
     for (int i = 1; i < seqInfo.colNum - 1; i++) {
-        int start = i % 2 == 0 ? 1 : 0;
-        int end = seqInfo.rowNum - 1;
-        if (seqInfo.colNum % 2 == 0 && i % 2 == 0)
-            end = end + 1;
-
-        for (int j = start; j < end; j++) {
+        for (int j = 1; j < seqInfo.rowNum - 1; j++) {
 
             cv::Point2i curCenter(std::round(seqInfo.centers[i * seqInfo.rowNum + j].x),
                                   std::round(seqInfo.centers[i * seqInfo.rowNum + j].y));
 
-            std::array<cv::Point2i, NeighborNum> bestOffsets;
-            if (j == start || j == end - 1) {
-                for (int idx = 0; idx < NeighborNum; idx++) {
-                    bestOffsets[idx] = offsetCandidates[idx][0];
-                }
-            } else {
-                bestOffsets = findBestOffset(image, curCenter);
-            }
+            std::array<cv::Point2i, NeighborNum> bestOffsets = findBestOffset(dstImage, curCenter);
 
             std::array<cv::Mat, CornerNum> cornerMasks =
-                getFourCornerMasks(image.size(), curCenter);
+                getFourCornerMasks(dstImage.size(), curCenter);
 
-            copyTo(image, cornerMasks[0], bestOffsets[3]);                 // top
-            copyTo(image, cornerMasks[1], bestOffsets[4], bestOffsets[5]); // right
-            copyTo(image, cornerMasks[2], bestOffsets[0]);                 // bottom
-            copyTo(image, cornerMasks[3], bestOffsets[1], bestOffsets[2]); // left
+            copyTo(dstImage, cornerMasks[0], bestOffsets[3]);                 // top
+            copyTo(dstImage, cornerMasks[1], bestOffsets[4], bestOffsets[5]); // right
+            copyTo(dstImage, cornerMasks[2], bestOffsets[0]);                 // bottom
+            copyTo(dstImage, cornerMasks[3], bestOffsets[1], bestOffsets[2]); // left
         }
     }
 
     // restore edge MI and half MI
+    dstImage = expandImage(dstImage, radius, 0, radius, 0);
+    // first column and last column
     for (int row = 0; row < seqInfo.rowNum; ++row) {
-        restoreCornersOfEdgeMI(image, cv::Point2i(std::round(seqInfo.centers[row].x),
-                                                  std::round(seqInfo.centers[row].y)));
+        restoreCornersOfEdgeMI(dstImage, cv::Point2i(std::round(seqInfo.centers[row].x),
+                                                     std::round(seqInfo.centers[row].y + radius)));
         restoreCornersOfEdgeMI(
-            image, cv::Point2i(
-                       std::round(seqInfo.centers[(seqInfo.colNum - 1) * seqInfo.rowNum + row].x),
-                       std::round(seqInfo.centers[(seqInfo.colNum - 1) * seqInfo.rowNum + row].y)));
+            dstImage,
+            cv::Point2i(std::round(seqInfo.centers[(seqInfo.colNum - 1) * seqInfo.rowNum + row].x),
+                        std::round(seqInfo.centers[(seqInfo.colNum - 1) * seqInfo.rowNum + row].y +
+                                   radius)));
     }
+    // first row and last row and half MI
     for (int col = 0; col < seqInfo.colNum; ++col) {
+        restoreCornersOfEdgeMI(
+            dstImage, cv::Point2i(std::round(seqInfo.centers[col * seqInfo.rowNum].x),
+                                  std::round(seqInfo.centers[col * seqInfo.rowNum].y + radius)));
+        restoreCornersOfEdgeMI(
+            dstImage,
+            cv::Point2i(std::round(seqInfo.centers[(col + 1) * seqInfo.rowNum - 1].x),
+                        std::round(seqInfo.centers[(col + 1) * seqInfo.rowNum - 1].y + radius)));
+
+        if (seqInfo.colNum % 2 == 1) {
+            restoreCornersOfEdgeMI(
+                dstImage,
+                cv::Point2i(
+                    std::round(seqInfo.centers[(col + 1) * seqInfo.rowNum - 2].x),
+                    std::round(radius + seqInfo.centers[(col + 1) * seqInfo.rowNum - 2].y)));
+        }
+
         if (col % 2 == 0) {
-            
+            restoreCornersOfEdgeMI(
+                dstImage, cv::Point2i(std::round(seqInfo.centers[(col + 1) * seqInfo.rowNum - 1].x),
+                                      std::round(seqInfo.centers[(col + 1) * seqInfo.rowNum - 1].y +
+                                                 radius + seqInfo.diameter)));
+        } else {
+            restoreCornersOfEdgeMI(
+                dstImage, cv::Point2i(std::round(seqInfo.centers[col * seqInfo.rowNum].x),
+                                      std::round(seqInfo.centers[col * seqInfo.rowNum].y + radius -
+                                                 seqInfo.diameter - 1))); // diameter - 1
         }
     }
+    dstImage = cropImage(dstImage, radius, 0, radius, 0);
 }
+
 void PostProcessor::restoreCornersOfEdgeMI(cv::Mat &image, const cv::Point2i &center) {
     cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1);
     cv::circle(mask, center, radius, cv::Scalar(255), -1);

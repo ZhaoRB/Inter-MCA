@@ -17,8 +17,8 @@ std::string pointToString(const cv::Point& point);
 
 double calculateDistance(const cv::Point &point1, const cv::Point &point2);
 
-cv::Mat expandImage(const cv::Mat &srcImage, int addRow, int addCol);
+cv::Mat expandImage(const cv::Mat &srcImage, int top, int left, int bottom, int right);
 
-cv::Mat cropImage(const cv::Mat &srcImage, int uselessRow, int uselessCol);
+cv::Mat cropImage(const cv::Mat &srcImage, int top, int left, int bottom, int right);
 
 } // namespace MCA2

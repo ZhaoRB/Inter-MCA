@@ -37,8 +37,6 @@ private:
 
     void restoreCornersOfEdgeMI(cv::Mat &image, const cv::Point2i &center);
 
-    void restoreCornersOfHalfMI();
-
     // void lumaCompensation(cv::Mat &image);
 
 public:

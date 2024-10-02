@@ -36,6 +36,20 @@ void PostProcessor::restoreCroppedPatched(const cv::Mat &processedImage, cv::Mat
 
             processedImage(cv::Rect(tgtX, tgtY, sideLength, halfSideLength))
                 .copyTo(restoredImage(cv::Rect(srcX, srcY, sideLength, halfSideLength)));
+        } 
+        else {
+            cv::Point2i curCenter(
+                std::round(seqInfo.centers[i * seqInfo.rowNum + seqInfo.rowNum - 1].x),
+                std::round(seqInfo.centers[i * seqInfo.rowNum + seqInfo.rowNum - 1].y) +
+                    seqInfo.diameter);
+
+            int srcX = curCenter.x - halfSideLength;
+            int srcY = curCenter.y - halfSideLength;
+            int tgtX = i * sideLength;
+            int tgtY = seqInfo.rowNum * sideLength;
+
+            processedImage(cv::Rect(tgtX, tgtY, sideLength, halfSideLength))
+                .copyTo(restoredImage(cv::Rect(srcX, srcY, sideLength, halfSideLength)));
         }
 
         // if (i % 2 == 1 && seqInfo.colNum % 2 == 1 || i % 2 == 0 && seqInfo.colNum % 2 == 0) {
