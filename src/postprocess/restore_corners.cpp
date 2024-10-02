@@ -1,5 +1,6 @@
 #include "postprocess.hpp"
 #include "utils.hpp"
+#include <array>
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
@@ -10,6 +11,8 @@
 #include <opencv2/imgproc.hpp>
 #include <sstream>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace MCA2 {
 void PostProcessor::parseSupInfo(const std::string &supInfoPath) {
@@ -87,6 +90,8 @@ void PostProcessor::restoreFourCorners(cv::Mat &dstImage, const SequenceInfo &se
             copyTo(dstImage, cornerMasks[1], bestOffsets[4], bestOffsets[5]); // right
             copyTo(dstImage, cornerMasks[2], bestOffsets[0]);                 // bottom
             copyTo(dstImage, cornerMasks[3], bestOffsets[1], bestOffsets[2]); // left
+
+            // lumaCompensation(dstImage, curCenter);
         }
     }
 
@@ -211,6 +216,64 @@ void PostProcessor::copyTo(cv::Mat &image, cv::Mat &dstMask, const cv::Point2i &
 
                 if ((pixel2[0] + pixel2[1] + pixel2[2]) > pixel1[0] + pixel1[1] + pixel1[2])
                     pixel1 = pixel2;
+            }
+        }
+    }
+}
+
+void PostProcessor::lumaCompensation(cv::Mat &image, const cv::Point2i &center) {
+    // calculate luminance decay coefficients
+    double lumaCenter = calculateLuma(image.at<cv::Vec3b>(center));
+    const int DIRECTIONS = 4;
+
+    std::unordered_map<int, double> coefficentMap[DIRECTIONS];
+    int start = std::round(static_cast<double>(halfSideLength) / sqrt(2));
+    int end = halfSideLength;
+
+    std::vector<cv::Point2i> offsets = {{-1, -1}, {1, -1}, {1, 1}, {-1, 1}};
+
+    for (int i = start; i < end; ++i) {
+        int distance = std::round(i * sqrt(2));
+
+        for (int j = 0; j < DIRECTIONS; ++j) {
+            double lumaCur = calculateLuma(image.at<cv::Vec3b>(center + offsets[j] * i));
+            coefficentMap[j][distance] = lumaCur / lumaCenter;
+        }
+    }
+
+    // luma compensation
+    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1);
+    cv::circle(mask, center, radius, cv::Scalar(255), -1);
+    cv::rectangle(
+        mask,
+        cv::Rect(center.x - halfSideLength, center.y - halfSideLength, sideLength, sideLength),
+        cv::Scalar(0), -1);
+
+    std::vector<cv::Point2i> ltops = {{center.x - radius, center.y - radius},
+                                      {center.x, center.y - radius},
+                                      {center.x, center.y},
+                                      {center.x - radius, center.y}};
+
+    for (int i = 0; i < DIRECTIONS; i++) {
+        // std::cout << i << std::endl;
+        // for (const auto &pair : coefficentMap[i]) {
+        //     int key = pair.first;
+        //     double value = pair.second;
+        //     std::cout << "key: " << key << " value: " << value << std::endl;
+        // }
+
+        for (int x = 0; x <= radius; x++) {
+            for (int y = 0; y <= radius; y++) {
+                cv::Point2i cur(ltops[i].x + x, ltops[i].y + y);
+                if (mask.at<uchar>(cur) == 0)
+                    continue;
+
+                cv::Vec3b &pixel = image.at<cv::Vec3b>(cur);
+                int dis = std::round(calculateDistance(cur, center));
+                while (coefficentMap[i].count(dis) == 0) {
+                    dis--;
+                }
+                pixel = pixel * coefficentMap[i][dis];
             }
         }
     }

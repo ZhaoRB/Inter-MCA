@@ -97,4 +97,9 @@ cv::Mat cropImage(const cv::Mat &srcImage, int top, int left, int bottom, int ri
     return srcImage(
         cv::Rect(left, top, srcImage.cols - left - right, srcImage.rows - top - bottom));
 }
+
+double calculateLuma(cv::Vec3b &pixel) {
+    return 0.299 * pixel[0] + 0.587 * pixel[1] + 0.114 * pixel[2];
+}
+
 } // namespace MCA2

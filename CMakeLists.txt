@@ -62,6 +62,7 @@ add_executable(
     src/postprocess/postprocess.cpp
     src/postprocess/restore_patches.cpp
     src/postprocess/restore_corners.cpp
+    src/postprocess/restore_gap.cpp
     src/common/utils.cpp
     src/common/parse.cpp
 )

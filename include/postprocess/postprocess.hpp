@@ -37,7 +37,10 @@ private:
 
     void restoreCornersOfEdgeMI(cv::Mat &image, const cv::Point2i &center);
 
-    // void lumaCompensation(cv::Mat &image);
+    void lumaCompensation(cv::Mat &image, const cv::Point2i &center);
+
+    // restore gaps among MIs
+    
 
 public:
     void postprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo);

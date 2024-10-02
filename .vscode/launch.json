@@ -20,7 +20,7 @@
             "name": "postprocess",
             "program": "${workspaceFolder}/build/MCA-Postprocess",
             "args": [
-                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/TSPC/Boys/post.cfg",
+                "/Users/riverzhao/Project/Codec/0_lvc_codec/Inter-MCA/config/TSPC/NewMiniGarden/post.cfg",
             ],
             "cwd": "${workspaceFolder}"
         },
