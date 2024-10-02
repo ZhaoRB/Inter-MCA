@@ -55,7 +55,6 @@ std::array<cv::Point2i, NeighborNum> PostProcessor::findBestOffset(const cv::Mat
 
     for (int i = 0; i < NeighborNum; i++) {
         ssimScores[i] = 0;
-
         for (auto offset : offsetCandidates[i]) {
             cv::Rect tgtROI = srcROIs[i] + offset;
             double ssim = calculateSSIM(image(srcROIs[i]), image(tgtROI));
@@ -71,26 +70,41 @@ std::array<cv::Point2i, NeighborNum> PostProcessor::findBestOffset(const cv::Mat
 
 void PostProcessor::restoreFourCorners(cv::Mat &image, const SequenceInfo &seqInfo) {
     std::cout << "Restoring four corners..." << std::endl;
+    // std::cout << "rowNum: " << seqInfo.rowNum << std::endl;
 
+    // restore main part
     for (int i = 1; i < seqInfo.colNum - 1; i++) {
-        for (int j = 1; j < seqInfo.rowNum - 2; j++) {
-            if (j == seqInfo.rowNum - 2 && seqInfo.colNum % 2 == 1 && j % 2 == 1)
-                continue;
+        int start = i % 2 == 0 ? 1 : 0;
+        int end = seqInfo.rowNum - 1;
+        if (seqInfo.colNum % 2 == 0 && i % 2 == 0)
+            end = end + 1;
+
+        for (int j = start; j < end; j++) {
 
             cv::Point2i curCenter(std::round(seqInfo.centers[i * seqInfo.rowNum + j].x),
                                   std::round(seqInfo.centers[i * seqInfo.rowNum + j].y));
 
-            std::array<cv::Point2i, NeighborNum> bestOffsets = findBestOffset(image, curCenter);
+            std::array<cv::Point2i, NeighborNum> bestOffsets;
+            if (j == start || j == end - 1) {
+                for (int idx = 0; idx < NeighborNum; idx++) {
+                    bestOffsets[idx] = offsetCandidates[idx][0];
+                }
+            } else {
+                bestOffsets = findBestOffset(image, curCenter);
+            }
 
             std::array<cv::Mat, CornerNum> cornerMasks =
                 getFourCornerMasks(image.size(), curCenter);
 
-            copyTo(image, cornerMasks[0], bestOffsets[3]);
-            copyTo(image, cornerMasks[1], bestOffsets[4], bestOffsets[5]);
-            copyTo(image, cornerMasks[2], bestOffsets[0]);
-            copyTo(image, cornerMasks[3], bestOffsets[1], bestOffsets[2]);
+            copyTo(image, cornerMasks[0], bestOffsets[3]);                 // top
+            copyTo(image, cornerMasks[1], bestOffsets[4], bestOffsets[5]); // right
+            copyTo(image, cornerMasks[2], bestOffsets[0]);                 // bottom
+            copyTo(image, cornerMasks[3], bestOffsets[1], bestOffsets[2]); // left
+            // std::cout << "copied: " << i << ", " << j << std::endl;
         }
     }
+
+    // restore edge MI
 }
 
 std::array<cv::Mat, CornerNum> PostProcessor::getFourCornerMasks(const cv::Size &imageSize,
@@ -122,41 +136,24 @@ void PostProcessor::copyTo(cv::Mat &image, cv::Mat &dstMask, const cv::Point2i &
     cv::Rect dstBoundingBox = cv::boundingRect(dstMask);
     cv::Rect srcBoundingBox = dstBoundingBox + offset1;
 
-    if (srcBoundingBox.x < 0 || srcBoundingBox.y < 0 ||
-        srcBoundingBox.x + srcBoundingBox.width > image.cols ||
-        srcBoundingBox.y + srcBoundingBox.height > image.rows) {
-        std::cerr << "Error: srcROI is out of bounds." << std::endl;
-        return;
-    }
-
-    cv::Mat srcROI = image(srcBoundingBox); // 从 image 中获取源区域
-
+    cv::Mat srcROI = image(srcBoundingBox);
     srcROI.copyTo(image(dstBoundingBox), dstMask(dstBoundingBox));
 
     if (offset2 != cv::Point2i(0, 0)) {
         srcBoundingBox = dstBoundingBox + offset2;
+        srcROI = image(srcBoundingBox);
 
-        if (srcBoundingBox.x < 0 || srcBoundingBox.y < 0 ||
-            srcBoundingBox.x + srcBoundingBox.width > image.cols ||
-            srcBoundingBox.y + srcBoundingBox.height > image.rows) {
-            std::cerr << "Error: srcROI is out of bounds." << std::endl;
-            return;
-        }
-
-        cv::Mat srcROI = image(srcBoundingBox);
         int threshold = 30;
         for (int x = 0; x < dstBoundingBox.width; x++) {
             for (int y = 0; y < dstBoundingBox.height; y++) {
-                if (dstMask.at<uchar>(dstBoundingBox.y + y, dstBoundingBox.x + x) > 0) {
-                    cv::Vec3b pixel1 =
-                        image.at<cv::Vec3b>(dstBoundingBox.y + y, dstBoundingBox.x + x);
-                    cv::Vec3b pixel2 =
-                        image.at<cv::Vec3b>(srcBoundingBox.y + y, srcBoundingBox.x + x);
+                if (dstMask.at<uchar>(dstBoundingBox.y + y, dstBoundingBox.x + x) == 0)
+                    continue;
 
-                    if ((pixel2[0] + pixel2[1] + pixel2[2]) > pixel1[0] + pixel1[1] + pixel1[2]) {
-                        image.at<cv::Vec3b>(dstBoundingBox.y + y, dstBoundingBox.x + x) = pixel2;
-                    }
-                }
+                cv::Vec3b &pixel1 = image.at<cv::Vec3b>(dstBoundingBox.y + y, dstBoundingBox.x + x);
+                cv::Vec3b pixel2 = image.at<cv::Vec3b>(srcBoundingBox.y + y, srcBoundingBox.x + x);
+
+                if ((pixel2[0] + pixel2[1] + pixel2[2]) > pixel1[0] + pixel1[1] + pixel1[2])
+                    pixel1 = pixel2;
             }
         }
     }

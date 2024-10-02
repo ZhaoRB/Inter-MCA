@@ -5,6 +5,7 @@
 #include "parse.hpp"
 #include "preprocess.hpp"
 
+// todo: 优化，boys序列通过扩图与garden等保持一致
 int main(int argc, char **argv) {
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <config_file_path>" << std::endl;
