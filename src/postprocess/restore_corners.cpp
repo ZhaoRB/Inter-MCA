@@ -70,7 +70,6 @@ std::array<cv::Point2i, NeighborNum> PostProcessor::findBestOffset(const cv::Mat
 
 void PostProcessor::restoreFourCorners(cv::Mat &image, const SequenceInfo &seqInfo) {
     std::cout << "Restoring four corners..." << std::endl;
-    // std::cout << "rowNum: " << seqInfo.rowNum << std::endl;
 
     // restore main part
     for (int i = 1; i < seqInfo.colNum - 1; i++) {
@@ -100,15 +99,55 @@ void PostProcessor::restoreFourCorners(cv::Mat &image, const SequenceInfo &seqIn
             copyTo(image, cornerMasks[1], bestOffsets[4], bestOffsets[5]); // right
             copyTo(image, cornerMasks[2], bestOffsets[0]);                 // bottom
             copyTo(image, cornerMasks[3], bestOffsets[1], bestOffsets[2]); // left
-            // std::cout << "copied: " << i << ", " << j << std::endl;
         }
     }
 
-    // restore edge MI
+    // restore edge MI and half MI
+    for (int row = 0; row < seqInfo.rowNum; ++row) {
+        restoreCornersOfEdgeMI(image, cv::Point2i(std::round(seqInfo.centers[row].x),
+                                                  std::round(seqInfo.centers[row].y)));
+        restoreCornersOfEdgeMI(
+            image, cv::Point2i(
+                       std::round(seqInfo.centers[(seqInfo.colNum - 1) * seqInfo.rowNum + row].x),
+                       std::round(seqInfo.centers[(seqInfo.colNum - 1) * seqInfo.rowNum + row].y)));
+    }
+    for (int col = 0; col < seqInfo.colNum; ++col) {
+        if (col % 2 == 0) {
+            
+        }
+    }
+}
+void PostProcessor::restoreCornersOfEdgeMI(cv::Mat &image, const cv::Point2i &center) {
+    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1);
+    cv::circle(mask, center, radius, cv::Scalar(255), -1);
+
+    cv::Point2i patchLtop(center.x - halfSideLength, center.y - halfSideLength);
+    cv::Point2i patchRbot(center.x + halfSideLength, center.y + halfSideLength);
+
+    auto fillEdge = [&](const cv::Point2i &start, const cv::Point2i &step) {
+        cv::Vec3b pixel = image.at<cv::Vec3b>(start);
+        cv::Point2i tgt = start + step;
+        while (mask.at<uchar>(tgt) != 0) {
+            image.at<cv::Vec3b>(tgt) = pixel;
+            tgt += step;
+        }
+    };
+
+    // top & bottom
+    for (int x = patchLtop.x; x <= patchRbot.x; ++x) {
+        fillEdge(cv::Point2i(x, patchLtop.y), cv::Point2i(0, -1)); // top
+        fillEdge(cv::Point2i(x, patchRbot.y), cv::Point2i(0, 1));  // bottom
+    }
+
+    // left & right
+    for (int y = patchLtop.y; y <= patchRbot.y; ++y) {
+        fillEdge(cv::Point2i(patchLtop.x, y), cv::Point2i(-1, 0)); // left
+        fillEdge(cv::Point2i(patchRbot.x, y), cv::Point2i(1, 0));  // right
+    }
 }
 
 std::array<cv::Mat, CornerNum> PostProcessor::getFourCornerMasks(const cv::Size &imageSize,
-                                                                 cv::Point2i &center) {
+                                                                 const cv::Point2i &center) {
 
     std::array<cv::Mat, CornerNum> cornerMasks;
     for (auto &mask : cornerMasks) {

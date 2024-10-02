@@ -30,10 +30,14 @@ private:
     void restoreFourCorners(cv::Mat &dstImage, const SequenceInfo &seqInfo);
 
     std::array<cv::Mat, CornerNum> getFourCornerMasks(const cv::Size &imageSize,
-                                                      cv::Point2i &center);
+                                                      const cv::Point2i &center);
 
     void copyTo(cv::Mat &image, cv::Mat &dstMask, const cv::Point2i &offset1,
                 const cv::Point2i &offset2 = cv::Point2i(0, 0));
+
+    void restoreCornersOfEdgeMI(cv::Mat &image, const cv::Point2i &center);
+
+    void restoreCornersOfHalfMI();
 
     // void lumaCompensation(cv::Mat &image);
 
