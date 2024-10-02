@@ -16,12 +16,21 @@ void PostProcessor::postprocess(SequenceInfo &seqInfo, TaskInfo &taskInfo) {
 
         cv::Mat restoredImage = cv::Mat::zeros(cv::Size(seqInfo.width, seqInfo.height), CV_8UC3);
 
+        if (seqInfo.colNum % 2 == 1) {
+            preprocessedImage = expandImage(preprocessedImage, halfSideLength, sideLength);
+            restoredImage = expandImage(restoredImage, radius, std::round(sqrt(3) * radius));
+        }
+
         // restore patches
         restoreCroppedPatched(preprocessedImage, restoredImage, seqInfo);
 
         // restore four corners
-        parseSupInfo(taskInfo.supInfoPath);
-        restoreFourCorners(restoredImage, seqInfo);
+        // parseSupInfo(taskInfo.supInfoPath);
+        // restoreFourCorners(restoredImage, seqInfo);
+
+        if (seqInfo.colNum % 2 == 1) {
+            restoredImage = cropImage(restoredImage, radius, std::round(sqrt(3) * radius));
+        }
 
         cv::imwrite(getPath(taskInfo.outputPath, i), restoredImage);
     }

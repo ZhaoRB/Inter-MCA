@@ -1,5 +1,6 @@
 #include "utils.hpp"
 
+#include <opencv2/core/types.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
@@ -83,5 +84,16 @@ bool hasFormatSpecifier(const std::string &str) {
         }
     }
     return false;
+}
+
+cv::Mat expandImage(const cv::Mat &srcImage, int addRow, int addCol) {
+    cv::Mat res(cv::Size(srcImage.cols + addCol, srcImage.rows + addRow), srcImage.type(),
+                cv::Scalar(0, 0, 0));
+    srcImage.copyTo(res(cv::Rect(0, 0, srcImage.cols, srcImage.rows)));
+    return res;
+}
+
+cv::Mat cropImage(const cv::Mat &srcImage, int uselessRow, int uselessCol) {
+    return srcImage(cv::Rect(0, 0, srcImage.cols - uselessCol, srcImage.rows - uselessRow));
 }
 } // namespace MCA2
