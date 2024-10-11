@@ -5,7 +5,7 @@ include(cmake/dependencies.cmake)
 
 # preprocess
 add_executable(
-    MCA-Preprocess
+    mca20-pre
     src/preprocess/main.cpp
     src/preprocess/preprocess.cpp
     src/preprocess/offset_vector.cpp
@@ -14,10 +14,10 @@ add_executable(
     src/common/utils.cpp
 )
 
-target_compile_features(MCA-Preprocess PRIVATE cxx_std_17)
+target_compile_features(mca20-pre PRIVATE cxx_std_17)
 
 target_include_directories(
-    MCA-Preprocess
+    mca20-pre
     PRIVATE include/preprocess include/common
     PRIVATE ${OpenCV_INCLUDE_DIRS}
     PRIVATE ${pugixml_SOURCE_DIR}/src
@@ -26,7 +26,7 @@ target_include_directories(
 )
 
 target_link_libraries(
-    MCA-Preprocess
+    mca20-pre
     PRIVATE ${OpenCV_LIBS}
     PRIVATE
     "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
@@ -57,7 +57,7 @@ target_link_libraries(
 
 # draw centers
 add_executable(
-    MCA-Postprocess
+    mca20-post
     src/postprocess/main.cpp
     src/postprocess/postprocess.cpp
     src/postprocess/restore_patches.cpp
@@ -68,7 +68,7 @@ add_executable(
 )
 
 target_include_directories(
-    MCA-Postprocess
+    mca20-post
     PRIVATE
     include/common include/postprocess
     PRIVATE ${OpenCV_INCLUDE_DIRS}
@@ -76,7 +76,7 @@ target_include_directories(
 )
 
 target_link_libraries(
-    MCA-Postprocess
+    mca20-post
     PRIVATE ${OpenCV_LIBS}
     PRIVATE
     "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
