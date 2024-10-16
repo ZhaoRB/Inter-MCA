@@ -29,7 +29,7 @@ target_link_libraries(
     mca20-pre
     PRIVATE ${OpenCV_LIBS}
     PRIVATE
-    "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    pugixml
 )
 
 # draw centers
@@ -52,7 +52,7 @@ target_link_libraries(
     draw_centers
     PRIVATE ${OpenCV_LIBS}
     PRIVATE
-    "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    pugixml
 )
 
 # draw centers
@@ -79,5 +79,5 @@ target_link_libraries(
     mca20-post
     PRIVATE ${OpenCV_LIBS}
     PRIVATE
-    "${CMAKE_BINARY_DIR}/_deps/pugixml-build/${CMAKE_STATIC_LIBRARY_PREFIX}pugixml${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    pugixml
 )

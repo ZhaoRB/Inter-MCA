@@ -4,7 +4,7 @@ data/
 
 .cache/
 
-build/
+build*/
 
 .vscode/settings.json
 
